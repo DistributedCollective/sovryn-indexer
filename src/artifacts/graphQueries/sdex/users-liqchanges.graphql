@@ -1,0 +1,24 @@
+query ($users: [Bytes]) {
+  liquidityChanges(first: 1000, where: { user_in: $users }, orderBy: block, orderDirection: desc) {
+    id
+    transactionHash
+    callIndex
+    user
+    pool {
+      base
+      quote
+      poolIdx
+    }
+    block
+    time
+    positionType
+    changeType
+    bidTick
+    askTick
+    isBid
+    liq
+    baseFlow
+    quoteFlow
+    pivotTime
+  }
+}

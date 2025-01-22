@@ -23,13 +23,13 @@ export const startCrontab = async () => {
   // populate chain config on startup before running other tasks
   await updateChains();
 
-  runOnInit();
+  // runOnInit();
 
   dexJobs();
 
   // LEGACY JOBS
-  ammApyJobs();
-  graphWrapperJobs();
+  // ammApyJobs();
+  // graphWrapperJobs();
 
   // update cached prices every minute
   CronJob.from({
@@ -116,8 +116,8 @@ function dexJobs() {
 
   CronJob.from({
     cronTime: '*/1 * * * *',
-    runOnInit: true,
     onTick: tickWrapper(updateDexPoolBalances),
+    runOnInit: true
   }).start();
 }
 

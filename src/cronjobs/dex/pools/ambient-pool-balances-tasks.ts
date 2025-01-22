@@ -38,34 +38,41 @@ export const prepareAmbientPoolBalances = async (chain: SdexChain, chainId: numb
     childLogger.info('lastBalance:', lastBalance);
 
     if (!lastBalance || lastBalance.block < blockNumber) {
-      //New liqChanges
-      const balanceChanges = await chain.queryBalanceChanges(lastBalance?.block || 0);
+      const newLiqudityChanges = await chain.queryLquidityChanges(lastBalance?.block || 0);
 
-      childLogger.info('itesm:');
-      childLogger.info(balanceChanges);
+      // list of users that their positions has changed. (deposited / withdrawn)
+      const users = newLiqudityChanges.map((item) => item.user).filter((item, pos, self) => self.indexOf(item) == pos);
 
-      // //Old balances
-      // const balances = await poolBalanceRepository.loadUsersBalances(users, chainId);
+      //Remove old balances
+      await poolBalanceRepository.removeOldPositions(chainId, users);
 
-      // childLogger.info(balances);
-
-      //calculate the new balances -> New liqChanges Balances + Old balances => new Balance
-
-      //   const values = items.userBinLiquidities.map((bin) => ({
-      //     tickAt: new Date(Number(bin.timestamp) * 1000),
-      //     chainId: chainId,
-      //     user: bin.user.id,
-      //     liquidity: bin.liquidity,
-      //     binId: bin.binId,
-      //     priceX: bin.lbPairBinId.priceX,
-      //     priceY: bin.lbPairBinId.priceY,
-      //     totalSupply: bin.lbPairBinId.totalSupply,
-      //     reserveX: bin.lbPairBinId.reserveX,
-      //     reserveY: bin.lbPairBinId.reserveY,
-      //     block: bin.block,
-      //   }));
-
-      // await binRepository.create(values);
+      const newPositions = await chain.queryPositions(users);
+      poolBalanceRepository.create(
+        newPositions.map((position) => ({
+          user: position.user,
+          chainId: chainId,
+          identifier: `${chainId}-${position.user}-${position.pool.poolIdx}-${position.pool.base}-${position.pool.quote}`,
+          poolId: 0,
+          baseQty: position.baseQty,
+          quoteQty: position.quoteQty,
+          block: Number(position.block),
+          extra: {
+            ambientLiq: position.ambientLiq,
+            concLiq: position.concLiq,
+            rewardLiq: position.rewardLiq,
+            aggregatedLiquidity: position.aggregatedLiquidity,
+            aggregatedBaseFlow: position.aggregatedBaseFlow,
+            aggregatedQuoteFlow: position.aggregatedQuoteFlow,
+            positionType: position.positionType,
+            bidTick: position.bidTick,
+            askTick: position.askTick,
+            aprDuration: position.aprDuration,
+            aprPostLiq: position.aprPostLiq,
+            aprContributedLiq: position.aprContributedLiq,
+            aprEst: position.aprEst,
+          },
+        })),
+      );
     }
   } catch (error) {
     childLogger.error(error, 'Error while preparing ambient pool balances', error);

@@ -1,5 +1,5 @@
 {
-  "id": "875c29c1-254a-43d7-a7be-6e56556c8da0",
+  "id": "c71608f4-7d49-414e-9c4f-6f97ae0d0d68",
   "prevId": "337e0834-eca4-40eb-b727-e8b4b0a8be3d",
   "version": "6",
   "dialect": "postgresql",
@@ -1132,8 +1132,8 @@
         }
       }
     },
-    "public.pool-balance": {
-      "name": "pool-balance",
+    "public.pool_balance": {
+      "name": "pool_balance",
       "schema": "",
       "columns": {
         "id": {
@@ -1142,23 +1142,11 @@
           "primaryKey": true,
           "notNull": true
         },
-        "base_id": {
-          "name": "base_id",
-          "type": "varchar",
+        "pool_id": {
+          "name": "pool_id",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
-        },
-        "quote_id": {
-          "name": "quote_id",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "ambient-liq": {
-          "name": "ambient-liq",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
         },
         "user": {
           "name": "user",
@@ -1172,18 +1160,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "concLiq": {
-          "name": "concLiq",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "rewardLiq": {
-          "name": "rewardLiq",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
         "baseQty": {
           "name": "baseQty",
           "type": "varchar",
@@ -1192,72 +1168,6 @@
         },
         "quoteQty": {
           "name": "quoteQty",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "aggregatedLiquidity": {
-          "name": "aggregatedLiquidity",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "aggregatedBaseFlow": {
-          "name": "aggregatedBaseFlow",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "aggregatedQuoteFlow": {
-          "name": "aggregatedQuoteFlow",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "positionType": {
-          "name": "positionType",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "bidTick": {
-          "name": "bidTick",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "askTick": {
-          "name": "askTick",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "aprDuration": {
-          "name": "aprDuration",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "aprPostLiq": {
-          "name": "aprPostLiq",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "aprContributedLiq": {
-          "name": "aprContributedLiq",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "aprEst": {
-          "name": "aprEst",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "identifier": {
-          "name": "identifier",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
@@ -1287,13 +1197,33 @@
           "primaryKey": false,
           "notNull": false,
           "default": "now()"
+        },
+        "extra": {
+          "name": "extra",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "pool-balance_chain_id_chains_id_fk": {
-          "name": "pool-balance_chain_id_chains_id_fk",
-          "tableFrom": "pool-balance",
+        "pool_balance_pool_id_pools_id_fk": {
+          "name": "pool_balance_pool_id_pools_id_fk",
+          "tableFrom": "pool_balance",
+          "tableTo": "pools",
+          "columnsFrom": [
+            "pool_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pool_balance_chain_id_chains_id_fk": {
+          "name": "pool_balance_chain_id_chains_id_fk",
+          "tableFrom": "pool_balance",
           "tableTo": "chains",
           "columnsFrom": [
             "chain_id"
@@ -1307,13 +1237,13 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "pool_balance_comb_pkey": {
-          "name": "pool_balance_comb_pkey",
+        "pool_balances_comb_pkey": {
+          "name": "pool_balances_comb_pkey",
           "nullsNotDistinct": false,
           "columns": [
             "user",
             "chain_id",
-            "identifier"
+            "pool_id"
           ]
         }
       }

@@ -1,31 +1,35 @@
-import { pgTable, timestamp, varchar, integer, unique, serial, char } from 'drizzle-orm/pg-core';
+import { pgTable, timestamp, varchar, integer, unique, serial, char, jsonb } from 'drizzle-orm/pg-core';
 
 import { chains } from './chains';
+import { poolsTable } from './pools';
+
+export type PoolBalanceExtra = {
+  ambientLiq?: string;
+  concLiq?: string;
+  rewardLiq?: string;
+  aggregatedLiquidity?: string;
+  aggregatedBaseFlow?: string;
+  aggregatedQuoteFlow?: string;
+  positionType?: string;
+  bidTick?: number;
+  askTick?: number;
+  aprDuration?: string;
+  aprPostLiq?: string;
+  aprContributedLiq?: string;
+  aprEst?: string;
+};
 
 export const poolBalanceTable = pgTable(
-  'pool-balance',
+  'pool_balance',
   {
     id: serial('id').primaryKey(),
-    baseId: varchar('base_id').notNull(),
-    quoteId: varchar('quote_id').notNull(),
-    ambientLiq: varchar('ambient-liq'),
+    poolId: integer('pool_id')
+      .notNull()
+      .references(() => poolsTable.id, { onDelete: 'cascade' }),
     user: char('user', { length: 42 }).notNull(),
     time: varchar('time'),
-    concLiq: varchar('concLiq'),
-    rewardLiq: varchar('rewardLiq'),
     baseQty: varchar('baseQty'),
     quoteQty: varchar('quoteQty'),
-    aggregatedLiquidity: varchar('aggregatedLiquidity'),
-    aggregatedBaseFlow: varchar('aggregatedBaseFlow'),
-    aggregatedQuoteFlow: varchar('aggregatedQuoteFlow'),
-    positionType: varchar('positionType'),
-    bidTick: integer('bidTick'),
-    askTick: integer('askTick'),
-    aprDuration: varchar('aprDuration'),
-    aprPostLiq: varchar('aprPostLiq'),
-    aprContributedLiq: varchar('aprContributedLiq'),
-    aprEst: varchar('aprEst'),
-    identifier: varchar('identifier'),
     chainId: integer('chain_id')
       .notNull()
       .references(() => chains.id, { onDelete: 'cascade' }),
@@ -34,9 +38,11 @@ export const poolBalanceTable = pgTable(
     updatedAt: timestamp('updated_at')
       .defaultNow()
       .$onUpdate(() => new Date()),
+
+    extra: jsonb('extra').$type<PoolBalanceExtra>().default({}),
   },
   (t) => ({
-    comb: unique('pool_balance_comb_pkey').on(t.user, t.chainId, t.identifier),
+    comb: unique('pool_balances_comb_pkey').on(t.user, t.chainId, t.poolId),
   }),
 );
 

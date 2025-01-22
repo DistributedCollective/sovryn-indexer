@@ -4,7 +4,7 @@ import gql from 'graphql-tag';
 import { SdexQuery, SdexQuery__factory, SdexSwapDex, SdexSwapDex__factory } from 'artifacts/abis/types';
 import { queryFromSubgraph } from 'loader/subgraph';
 import { getPositions, getUserPositions } from 'loader/userPositionsLoader';
-import { LiquidityChangesResponse, SwapsResponse } from 'typings/subgraph/liquidity';
+import { LiquidityChanges, LiquidityChangesResponse, SwapsResponse } from 'typings/subgraph/liquidity';
 import { loadGqlFromArtifacts } from 'utils/subgraph';
 
 import type { Chain } from './chain-config';
@@ -13,6 +13,7 @@ import type { SdexChainConfig } from './types';
 const gqlPools = loadGqlFromArtifacts('graphQueries/sdex/pools.graphql');
 const gqlLiquidityChanges = loadGqlFromArtifacts('graphQueries/sdex/liqchanges.graphql');
 const gqlUserLiquidityChanges = loadGqlFromArtifacts('graphQueries/sdex/user-liqchanges.graphql');
+const gqlUsersLiquidityChanges = loadGqlFromArtifacts('graphQueries/sdex/users-liqchanges.graphql');
 const gqlSwaps = loadGqlFromArtifacts('graphQueries/sdex/swaps.graphql');
 
 export class SdexChain {
@@ -44,16 +45,40 @@ export class SdexChain {
     }>(gqlPools, { limit });
   }
 
-  public async queryUserPositions(user: string) {
+  public async queryUserLquidityChanges(user: string) {
     return this.queryFromSubgraph<LiquidityChangesResponse>(gqlUserLiquidityChanges, { user });
   }
 
-  public async queryBalanceChanges(minTime: number) {
+  public async queryLquidityChanges(minTime: number) {
     const { liquidityChanges } = await this.queryFromSubgraph<LiquidityChangesResponse>(gqlLiquidityChanges, {
       minTime,
     });
 
-    return getPositions(this.query, this.context.rpc, liquidityChanges, this.context);
+    return liquidityChanges;
+  }
+
+  public async queryPositions(users: string[]) {
+    const { liquidityChanges } = await this.queryFromSubgraph<LiquidityChangesResponse>(gqlUsersLiquidityChanges, {
+      users,
+    });
+
+    const groupedLiquidityChanges: { [user: string]: LiquidityChanges[] } = {};
+
+    liquidityChanges.forEach((liquidityChange) => {
+      if (!groupedLiquidityChanges[liquidityChange.user]) {
+        groupedLiquidityChanges[liquidityChange.user] = [liquidityChange];
+      } else {
+        groupedLiquidityChanges[liquidityChange.user].push(liquidityChange);
+      }
+    });
+
+    const positions = await Promise.all(
+      Object.keys(groupedLiquidityChanges).map((user) =>
+        getPositions(this.query, this.context.rpc, groupedLiquidityChanges[user], this.context),
+      ),
+    );
+
+    return positions.flat();
   }
 
   public async querySwaps(minTime: number, maxTime: number) {
@@ -61,7 +86,7 @@ export class SdexChain {
   }
 
   public async getUpdatedLiquidity(user: string) {
-    const { liquidityChanges } = await this.queryUserPositions(user);
+    const { liquidityChanges } = await this.queryUserLquidityChanges(user);
     return getUserPositions(this.query, this.context.rpc, liquidityChanges, this.context);
   }
 

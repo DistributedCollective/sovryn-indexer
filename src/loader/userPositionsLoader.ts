@@ -168,6 +168,14 @@ async function processConcentratedPositions(
           baseQty: rangeTokens.baseQty.toString(),
           quoteQty: rangeTokens.quoteQty.toString(),
           aprEst: apr.aprEst,
+          base: latestPosition.pool.base,
+          quote: latestPosition.pool.quote,
+          positionType: PositionType.concentrated,
+
+          ambientLiq: undefined,
+          aggregatedLiquidity: undefined,
+          aggregatedBaseFlow: undefined,
+          aggregatedQuoteFlow: undefined,
         };
       }
       return null;

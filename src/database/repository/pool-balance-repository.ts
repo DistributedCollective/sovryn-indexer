@@ -1,46 +1,29 @@
 import { eq, and, desc, inArray } from 'drizzle-orm';
 
 import { db } from 'database/client';
+import { poolsTable } from 'database/schema';
 import { NewPoolBalance, poolBalanceTable } from 'database/schema/pool-balance';
 
 export type PoolBalanceItem = Omit<NewPoolBalance, 'createdAt' | 'updatedAt'>;
 
 export const poolBalanceRepository = {
-  // create: (data: PoolBalanceItem[]) => db.insert(poolBalanceTable).values(data).onConflictDoUpdate({
-  //   target: [tokens.chainId, tokens.address],
-  //   set: {
-  //     swapableSince: sql`EXCLUDED.swapable_since`,
-  //   },
-  // })
-  // .returning({ id: tokens.id })
-  // .execute();
+  create: (data: PoolBalanceItem[]) =>
+    db.insert(poolBalanceTable).values(data).returning({ id: poolBalanceTable.id }).execute(),
 
   loadAll: (chainId?: number) =>
     db
       .select({
         id: poolBalanceTable.id,
-        baseId: poolBalanceTable.baseId,
-        quoteId: poolBalanceTable.quoteId,
-        ambientLiq: poolBalanceTable.ambientLiq,
+        poolId: poolBalanceTable.poolId,
         user: poolBalanceTable.user,
         time: poolBalanceTable.time,
-        concLiq: poolBalanceTable.concLiq,
-        rewardLiq: poolBalanceTable.rewardLiq,
         baseQty: poolBalanceTable.baseQty,
         quoteQty: poolBalanceTable.quoteQty,
-        aggregatedLiquidity: poolBalanceTable.aggregatedLiquidity,
-        aggregatedBaseFlow: poolBalanceTable.aggregatedBaseFlow,
-        aggregatedQuoteFlow: poolBalanceTable.aggregatedQuoteFlow,
-        positionType: poolBalanceTable.positionType,
-        bidTick: poolBalanceTable.bidTick,
-        askTick: poolBalanceTable.askTick,
-        aprDuration: poolBalanceTable.aprDuration,
-        aprPostLiq: poolBalanceTable.aprPostLiq,
-        aprContributedLiq: poolBalanceTable.aprContributedLiq,
-        aprEst: poolBalanceTable.aprEst,
+        extra: poolsTable.extra,
         block: poolBalanceTable.block,
       })
       .from(poolBalanceTable)
+      .innerJoin(poolsTable, eq(poolBalanceTable.poolId, poolsTable.id))
       .where(and(chainId ? eq(poolBalanceTable.chainId, chainId) : undefined)),
 
   loadUserBalances: (user: string, chainId?: number) =>
@@ -60,4 +43,11 @@ export const poolBalanceRepository = {
       where: and(chainId ? eq(poolBalanceTable.chainId, chainId) : undefined),
       orderBy: desc(poolBalanceTable.block),
     }),
+
+  removeOldPositions: (chainId: number, users: string[]) =>
+    db
+      .delete(poolBalanceTable)
+      // TODO: Do not remove type order book
+      .where(and(eq(poolBalanceTable.chainId, chainId), inArray(poolBalanceTable.user, users)))
+      .execute(),
 };
