@@ -38,11 +38,11 @@ export const poolBalanceTable = pgTable(
     updatedAt: timestamp('updated_at')
       .defaultNow()
       .$onUpdate(() => new Date()),
-
+    identifier: varchar('identifier', { length: 256 }).notNull(),
     extra: jsonb('extra').$type<PoolBalanceExtra>().default({}),
   },
   (t) => ({
-    comb: unique('pool_balances_comb_pkey').on(t.user, t.chainId, t.poolId),
+    comb: unique('pool_balances_comb_pkey').on(t.user, t.chainId, t.poolId, t.identifier),
   }),
 );
 

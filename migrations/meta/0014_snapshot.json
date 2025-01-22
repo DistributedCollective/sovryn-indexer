@@ -1,5 +1,5 @@
 {
-  "id": "c71608f4-7d49-414e-9c4f-6f97ae0d0d68",
+  "id": "e08c441a-97bb-4093-914b-6aadfe23dcf8",
   "prevId": "337e0834-eca4-40eb-b727-e8b4b0a8be3d",
   "version": "6",
   "dialect": "postgresql",
@@ -1198,6 +1198,12 @@
           "notNull": false,
           "default": "now()"
         },
+        "identifier": {
+          "name": "identifier",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
         "extra": {
           "name": "extra",
           "type": "jsonb",
@@ -1243,7 +1249,8 @@
           "columns": [
             "user",
             "chain_id",
-            "pool_id"
+            "pool_id",
+            "identifier"
           ]
         }
       }

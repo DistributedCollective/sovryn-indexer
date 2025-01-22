@@ -9,8 +9,9 @@ CREATE TABLE IF NOT EXISTS "pool_balance" (
 	"block" integer,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now(),
+	"identifier" varchar(256) NOT NULL,
 	"extra" jsonb DEFAULT '{}'::jsonb,
-	CONSTRAINT "pool_balances_comb_pkey" UNIQUE("user","chain_id","pool_id")
+	CONSTRAINT "pool_balances_comb_pkey" UNIQUE("user","chain_id","pool_id","identifier")
 );
 --> statement-breakpoint
 DO $$ BEGIN

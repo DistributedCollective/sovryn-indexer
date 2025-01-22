@@ -1,6 +1,7 @@
 import { CronJob } from 'cron';
 
 import { poolBalanceRepository } from 'database/repository/pool-balance-repository';
+import { poolsRepository } from 'database/repository/pools-repository';
 import { networks } from 'loader/networks';
 import { SdexChain } from 'loader/networks/sdex-chain';
 import { NetworkFeature } from 'loader/networks/types';
@@ -47,12 +48,22 @@ export const prepareAmbientPoolBalances = async (chain: SdexChain, chainId: numb
       await poolBalanceRepository.removeOldPositions(chainId, users);
 
       const newPositions = await chain.queryPositions(users);
+
+      const pools = await poolsRepository.listForChain(chainId);
+
+      const getPool = (base: string, quote: string) =>
+        pools.find(
+          (pool) =>
+            pool.base.address.toLowerCase() === base.toLowerCase() &&
+            pool.quote.address.toLowerCase() === quote.toLowerCase(),
+        );
+
       poolBalanceRepository.create(
         newPositions.map((position) => ({
           user: position.user,
           chainId: chainId,
-          identifier: `${chainId}-${position.user}-${position.pool.poolIdx}-${position.pool.base}-${position.pool.quote}`,
-          poolId: 0,
+          identifier: `${position.positionType}-${position.pool.poolIdx}-${position.pool.base}-${position.pool.quote}`,
+          poolId: getPool(position.base, position.quote)?.id || 0,
           baseQty: position.baseQty,
           quoteQty: position.quoteQty,
           block: Number(position.block),
