@@ -1,5 +1,5 @@
 {
-  "id": "e08c441a-97bb-4093-914b-6aadfe23dcf8",
+  "id": "0c2de027-b545-4027-8b9c-daf55d88c4ff",
   "prevId": "337e0834-eca4-40eb-b727-e8b4b0a8be3d",
   "version": "6",
   "dialect": "postgresql",
@@ -1148,6 +1148,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "transactionHash": {
+          "name": "transactionHash",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "user": {
           "name": "user",
           "type": "char(42)",
@@ -1250,7 +1256,8 @@
             "user",
             "chain_id",
             "pool_id",
-            "identifier"
+            "identifier",
+            "transactionHash"
           ]
         }
       }

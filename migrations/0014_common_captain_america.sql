@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS "pool_balance" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"pool_id" integer NOT NULL,
+	"transactionHash" varchar,
 	"user" char(42) NOT NULL,
 	"time" varchar,
 	"baseQty" varchar,
@@ -11,7 +12,7 @@ CREATE TABLE IF NOT EXISTS "pool_balance" (
 	"updated_at" timestamp DEFAULT now(),
 	"identifier" varchar(256) NOT NULL,
 	"extra" jsonb DEFAULT '{}'::jsonb,
-	CONSTRAINT "pool_balances_comb_pkey" UNIQUE("user","chain_id","pool_id","identifier")
+	CONSTRAINT "pool_balances_comb_pkey" UNIQUE("user","chain_id","pool_id","identifier","transactionHash")
 );
 --> statement-breakpoint
 DO $$ BEGIN

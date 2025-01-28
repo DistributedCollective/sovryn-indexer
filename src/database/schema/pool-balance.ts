@@ -26,6 +26,7 @@ export const poolBalanceTable = pgTable(
     poolId: integer('pool_id')
       .notNull()
       .references(() => poolsTable.id, { onDelete: 'cascade' }),
+    transactionHash: varchar('transactionHash'),
     user: char('user', { length: 42 }).notNull(),
     time: varchar('time'),
     baseQty: varchar('baseQty'),
@@ -42,7 +43,7 @@ export const poolBalanceTable = pgTable(
     extra: jsonb('extra').$type<PoolBalanceExtra>().default({}),
   },
   (t) => ({
-    comb: unique('pool_balances_comb_pkey').on(t.user, t.chainId, t.poolId, t.identifier),
+    comb: unique('pool_balances_comb_pkey').on(t.user, t.chainId, t.poolId, t.identifier, t.transactionHash),
   }),
 );
 

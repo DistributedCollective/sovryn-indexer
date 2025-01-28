@@ -44,8 +44,12 @@ export const prepareAmbientPoolBalances = async (chain: SdexChain, chainId: numb
       // list of users that their positions has changed. (deposited / withdrawn)
       const users = newLiqudityChanges.map((item) => item.user).filter((item, pos, self) => self.indexOf(item) == pos);
 
+      const poolbalances = await poolBalanceRepository.loadAll(chainId);
+
       //Remove old balances
       await poolBalanceRepository.removeOldPositions(chainId, users);
+
+      const poolbalances2 = await poolBalanceRepository.loadAll(chainId);
 
       const newPositions = await chain.queryPositions(users);
 
@@ -59,30 +63,35 @@ export const prepareAmbientPoolBalances = async (chain: SdexChain, chainId: numb
         );
 
       poolBalanceRepository.create(
-        newPositions.map((position) => ({
-          user: position.user,
-          chainId: chainId,
-          identifier: `${position.positionType}-${position.pool.poolIdx}-${position.pool.base}-${position.pool.quote}`,
-          poolId: getPool(position.base, position.quote)?.id || 0,
-          baseQty: position.baseQty,
-          quoteQty: position.quoteQty,
-          block: Number(position.block),
-          extra: {
-            ambientLiq: position.ambientLiq,
-            concLiq: position.concLiq,
-            rewardLiq: position.rewardLiq,
-            aggregatedLiquidity: position.aggregatedLiquidity,
-            aggregatedBaseFlow: position.aggregatedBaseFlow,
-            aggregatedQuoteFlow: position.aggregatedQuoteFlow,
-            positionType: position.positionType,
-            bidTick: position.bidTick,
-            askTick: position.askTick,
-            aprDuration: position.aprDuration,
-            aprPostLiq: position.aprPostLiq,
-            aprContributedLiq: position.aprContributedLiq,
-            aprEst: position.aprEst,
-          },
-        })),
+        newPositions.map((position) => {
+          const pool = getPool(position.base, position.quote);
+
+          return {
+            user: position.user,
+            chainId: chainId,
+            identifier: `${position.positionType}-${position.pool.poolIdx}-${position.pool.base}-${position.pool.quote}`,
+            transactionHash: position.transactionHash,
+            poolId: pool?.id || 0,
+            baseQty: position.baseQty,
+            quoteQty: position.quoteQty,
+            block: Number(position.block),
+            extra: {
+              ambientLiq: position.ambientLiq,
+              concLiq: position.concLiq,
+              rewardLiq: position.rewardLiq,
+              aggregatedLiquidity: position.aggregatedLiquidity,
+              aggregatedBaseFlow: position.aggregatedBaseFlow,
+              aggregatedQuoteFlow: position.aggregatedQuoteFlow,
+              positionType: position.positionType,
+              bidTick: position.bidTick,
+              askTick: position.askTick,
+              aprDuration: position.aprDuration,
+              aprPostLiq: position.aprPostLiq,
+              aprContributedLiq: position.aprContributedLiq,
+              aprEst: position.aprEst,
+            },
+          };
+        }),
       );
     }
   } catch (error) {
