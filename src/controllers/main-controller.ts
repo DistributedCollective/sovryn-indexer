@@ -25,7 +25,7 @@ import { createApiQuery, OrderBy, validatePaginatedRequest } from 'utils/paginat
 import { asyncRoute } from 'utils/route-wrapper';
 import { validate } from 'utils/validation';
 
-import { Timeframe, TIMEFRAME_ROUNDING, TIMEFRAMES } from './main-controller.constants';
+import { MAX_INTERVALS, Timeframe, TIMEFRAME_ROUNDING, TIMEFRAMES } from './main-controller.constants';
 
 const router = Router();
 
@@ -206,6 +206,12 @@ router.get(
 
     const start = toNearestCeilDate(dayjs.unix(startTimestamp).toDate(), TIMEFRAME_ROUNDING[timeframe]);
     const end = toNearestDate(dayjs.unix(endTimestamp).toDate(), TIMEFRAME_ROUNDING[timeframe]);
+
+    const maxInterval = MAX_INTERVALS[timeframe];
+    const intervals = (end.getTime() - start.getTime()) / (TIMEFRAMES[timeframe] * 60 * 1000);
+    if (intervals > maxInterval) {
+      throw new Error('Invalid arguments');
+    }
 
     try {
       const intervals = await getPrices(chainId, baseTokenAddress, quoteTokenAddress, start, end, timeframe);
