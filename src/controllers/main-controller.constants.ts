@@ -15,6 +15,21 @@ export const TIMEFRAMES = {
   '30d': 43200, // 1 month
 };
 
+export const MAX_INTERVALS = {
+  '1m': 1440, // 1 day
+  '5m': 864, // 3 days
+  '10m': 720, // 5 days
+  '15m': 720, // 1 week
+  '30m': 720, // 2 weeks
+  '1h': 720, // 1 month
+  '4h': 365, // 3 months
+  '12h': 365, // 6 months
+  '1d': 365,
+  '3d': 122,
+  '1w': 52,
+  '30d': 12, // 1 year
+};
+
 export type Timeframe = keyof typeof TIMEFRAMES;
 
 export const TIMEFRAME_ROUNDING: Record<Timeframe, NearestType> = {
