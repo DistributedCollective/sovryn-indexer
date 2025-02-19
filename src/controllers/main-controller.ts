@@ -16,7 +16,7 @@ import { networks } from 'loader/networks';
 import { getLastPrices } from 'loader/price';
 import { validateChainId } from 'middleware/network-middleware';
 import { maybeCacheResponse } from 'utils/cache';
-import { NotFoundError } from 'utils/custom-error';
+import { BadRequestError, NotFoundError } from 'utils/custom-error';
 import { toNearestCeilDate, toNearestDate } from 'utils/date';
 import { toPaginatedResponse, toResponse } from 'utils/http-response';
 import { logger } from 'utils/logger';
@@ -210,7 +210,7 @@ router.get(
     const maxInterval = MAX_INTERVALS[timeframe];
     const intervals = (end.getTime() - start.getTime()) / (TIMEFRAMES[timeframe] * 60 * 1000);
     if (intervals > maxInterval) {
-      throw new Error('Invalid arguments');
+      throw new BadRequestError('Invalid arguments');
     }
 
     try {
