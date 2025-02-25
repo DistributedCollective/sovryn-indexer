@@ -1,7 +1,6 @@
 import { CronJob } from 'cron';
 
 import { updateDexPoolList, updateDexPoolListData } from 'cronjobs/dex/pools';
-import { updateDexPoolBalances } from 'cronjobs/dex/pools/ambient-pool-balances-tasks';
 import { swapTasks } from 'cronjobs/dex/swaps/swaps-tasks';
 import { tokenFetcherTask } from 'cronjobs/dex/token-fetcher-task';
 import { ammApyBlockTask } from 'cronjobs/legacy/amm/amm-apy-block-task';
@@ -112,11 +111,6 @@ function dexJobs() {
   CronJob.from({
     cronTime: '*/1 * * * *',
     onTick: tickWrapper(swapTasks),
-  }).start();
-
-  CronJob.from({
-    cronTime: '*/1 * * * *',
-    onTick: tickWrapper(updateDexPoolBalances),
   }).start();
 }
 
