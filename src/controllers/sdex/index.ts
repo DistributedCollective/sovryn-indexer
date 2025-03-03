@@ -62,7 +62,7 @@ router.get(
       res,
       `sdex/user_pool_positions/${chainId}/${user}/${base}/${quote}/${poolIdx}`,
       async () => {
-        const liquidity = await req.network.sdex.getUserPositions(user);
+        const liquidity = await req.network.sdex.getUpdatedLiquidity(user, base, quote, poolIdx);
         return {
           liquidity,
         };

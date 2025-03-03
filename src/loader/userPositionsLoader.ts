@@ -80,6 +80,7 @@ async function processAmbientPositions(
           quoteQty: ambientTokens.quoteQty,
           base: position.pool.base,
           quote: position.pool.quote,
+          poolIdx: position.pool.poolIdx,
           concLiq: '0',
           rewardLiq: '0',
           aggregatedLiquidity: '0',
@@ -170,6 +171,7 @@ async function processConcentratedPositions(
           aprEst: apr.aprEst,
           base: latestPosition.pool.base,
           quote: latestPosition.pool.quote,
+          poolIdx: latestPosition.pool.poolIdx,
           positionType: PositionType.concentrated,
 
           ambientLiq: undefined,
