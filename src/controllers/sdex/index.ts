@@ -60,6 +60,25 @@ router.get(
 
     return maybeCacheResponse(
       res,
+      `sdex/user_pool_positions/${chainId}/${user}/${base}/${quote}/${poolIdx}`,
+      async () => {
+        const liquidity = await req.network.sdex.getUserPositions(user);
+        return {
+          liquidity,
+        };
+      },
+      DEFAULT_CACHE_TTL,
+    ).then((data) => res.json(toResponse(data.liquidity)));
+  }),
+);
+
+router.get(
+  '/user_positions',
+  asyncRoute(async (req, res) => {
+    const { user, chainId } = validate(querySchema, req.query);
+
+    return maybeCacheResponse(
+      res,
       `sdex/user_pool_positions/${chainId}/${user}`,
       async () => {
         const liquidity = await req.network.sdex.getUserPositions(user);
