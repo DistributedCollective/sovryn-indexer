@@ -72,4 +72,23 @@ router.get(
   }),
 );
 
+router.get(
+  '/user_positions',
+  asyncRoute(async (req, res) => {
+    const { user, chainId } = validate(querySchema, req.query);
+
+    return maybeCacheResponse(
+      res,
+      `sdex/user_pool_positions/${chainId}/${user}`,
+      async () => {
+        const liquidity = await req.network.sdex.getUserPositions(user);
+        return {
+          liquidity: liquidity,
+        };
+      },
+      DEFAULT_CACHE_TTL,
+    ).then((data) => res.json(toResponse(data.liquidity)));
+  }),
+);
+
 export default router;
