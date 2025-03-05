@@ -85,6 +85,17 @@ export class SdexChain {
     return this.queryFromSubgraph<SwapsResponse>(gqlSwaps, { minTime, maxTime });
   }
 
+  public async getUpdatedLiquidity(user: string, base: string, quote: string, poolIdx: number) {
+    const { liquidityChanges } = await this.queryUserLquidityChanges(user);
+    const positions = await getUserPositions(this.query, this.context.rpc, liquidityChanges, this.context);
+
+    return positions.filter(
+      (position) =>
+        position.base.toLowerCase() === base.toLowerCase() &&
+        position.quote.toLowerCase() === quote.toLowerCase() &&
+        position.poolIdx === poolIdx.toString(),
+    );
+  }
   public async getUserPositions(user: string) {
     const { liquidityChanges } = await this.queryUserLquidityChanges(user);
     return getUserPositions(this.query, this.context.rpc, liquidityChanges, this.context);
