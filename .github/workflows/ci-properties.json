@@ -5,6 +5,7 @@
   "registry": "docker.io",
   "image_name": "sovryn/sovryn-indexer",
   "prod_branch": "main",
+  "staging_branch": "staging",
   "dev_branch": "develop",
   "dockerfile_path": ".",
   "APP_ENV_VARS": {
@@ -16,6 +17,7 @@
     "TZ": "UTC"
   },
   "DEV_ENV_VARS": {},
+  "STAGING_ENV_VARS": {},
   "PROD_ENV_VARS": {
     "NODE_ENV": "production",
     "BYPASS_RATE_LIMIT": "true"
