@@ -2,17 +2,17 @@ name: CI Template
 
 on:
   push:
-    branches: [ develop, main ] # must be defined
+    branches: [ develop, staging, main ] # must be defined
   workflow_dispatch:
 
 jobs:
   call-workflow-init:
-   uses: DistributedCollective/.github/.github/workflows/init.yml@master
+   uses: DistributedCollective/.github/.github/workflows/init.yml@v2_staging
    with:
      ref: ${{ github.ref }}
      base_ref: ${{ github.base_ref }}
   call-workflow-docker-build:
-    uses: DistributedCollective/.github/.github/workflows/docker.yml@master
+    uses: DistributedCollective/.github/.github/workflows/docker.yml@v2_staging
     needs: [call-workflow-init]
     with:
       KUBE_NAMESPACE: ${{ needs.call-workflow-init.outputs.KUBE_NAMESPACE }}
