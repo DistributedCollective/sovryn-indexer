@@ -65,7 +65,7 @@ async function prepareSdexSwaps(chain: SdexChain, chainId: number) {
 
       const pool = poolsList.find((p) => p.identifier === poolIdentifier);
 
-      if (!baseToken || !quoteToken || !pool) {
+      if (!baseToken || !quoteToken) {
         // childLogger.warn({ swap, pool, baseToken, quoteToken, tokensList }, 'Missing reference for swap');
         return null;
       }
@@ -90,7 +90,7 @@ async function prepareSdexSwaps(chain: SdexChain, chainId: number) {
         user: swap.user,
         baseId: baseToken.id,
         quoteId: quoteToken.id,
-        poolId: pool.id,
+        poolId: pool?.id,
         type: swap.dex,
         block: Number(swap.block),
         tickAt: new Date(Number(swap.time) * 1e3),
@@ -140,7 +140,7 @@ async function prepareLegacySwaps(chain: LegacyChain, chainId: number) {
           p.type === 'bancor',
       );
 
-      if (!baseToken || !quoteToken || !pool || !swap.user) {
+      if (!baseToken || !quoteToken || !swap.user) {
         return null;
       }
       const baseAmount = prettyNumber(swap.fromAmount, baseToken.decimals);
@@ -158,7 +158,7 @@ async function prepareLegacySwaps(chain: LegacyChain, chainId: number) {
         user: swap.user.id,
         baseId: baseToken.id,
         quoteId: quoteToken.id,
-        poolId: pool.id,
+        poolId: pool?.id,
         type: 'bancor',
         block: Number(swap.transaction.blockNumber),
         tickAt: new Date(Number(swap.timestamp) * 1e3),
