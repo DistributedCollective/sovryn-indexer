@@ -23,7 +23,7 @@ export function buildCandlesticksOnWorker(
     worker.on('error', reject);
     worker.on('online', () => logger.info('worker online'));
     worker.on('exit', (code) => {
-      logger.info('worker exited', code);
+      logger.info({ code }, 'worker exited');
       if (code !== 0) reject(new Error(`Worker stopped with exit code ${code}`));
     });
   });

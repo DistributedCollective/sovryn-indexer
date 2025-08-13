@@ -119,7 +119,7 @@ export class HttpClient {
       const isAbsoluteUrl = isValidAbsoluteUrl(url);
       const input = isAbsoluteUrl ? url : `${this.config.baseUrl}${url}`;
 
-      this.logger.info('Fetching', { url, options });
+      this.logger.info({ url, options }, 'Fetching');
 
       const response = await fetch(input, {
         ...options,
@@ -136,7 +136,15 @@ export class HttpClient {
       try {
         data = await response.json();
       } catch (error) {
-        this.logger.error(error, 'Failed to parse response as JSON', { url, options, response });
+        this.logger.error(
+          {
+            error,
+            url,
+            options,
+            response,
+          },
+          'Failed to parse response as JSON',
+        );
       }
 
       return {
@@ -156,7 +164,7 @@ export class HttpClient {
           problem: HttpClientProblem.aborted,
         };
       }
-      this.logger.error(error, 'Failed to fetch', { url, options });
+      this.logger.error({ error, url, options }, 'Failed to fetch');
       return {
         ok: false,
         status: 0,

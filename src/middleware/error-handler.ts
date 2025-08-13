@@ -14,6 +14,7 @@ export const errorHandler = (err: CustomError, req: Request, res: Response, next
     return res.status(err.HttpStatusCode || 500).json(err.JSON);
   }
 
+  // @ts-ignore
   logger.error(err, 'Internal server error');
 
   const extendedError =

@@ -60,7 +60,7 @@ export async function tokenFetcherTask(ctx: CronJob) {
         dbTokens = await db.select().from(tokens).where(eq(tokens.chainId, chainId)).execute();
         logger.info(`Fetched ${dbTokens.length} tokens from the database for chainId ${chainId}`);
       } catch (error) {
-        logger.error(`Error fetching tokens from the database for chainId ${chainId}:`, error);
+        logger.error(error, `Error fetching tokens from the database for chainId ${chainId}:`);
         continue; // Skip to the next chain if fetching from the database fails
       }
 
