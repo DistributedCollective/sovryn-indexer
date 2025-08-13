@@ -16,7 +16,7 @@ import { networks } from 'loader/networks';
 import { getLastPrices } from 'loader/price';
 import { validateChainId } from 'middleware/network-middleware';
 import { maybeCacheResponse } from 'utils/cache';
-import { NotFoundError } from 'utils/custom-error';
+import { BadRequestError, NotFoundError } from 'utils/custom-error';
 import { toNearestCeilDate, toNearestDate } from 'utils/date';
 import { toPaginatedResponse, toResponse } from 'utils/http-response';
 import { logger } from 'utils/logger';
@@ -25,7 +25,7 @@ import { createApiQuery, OrderBy, validatePaginatedRequest } from 'utils/paginat
 import { asyncRoute } from 'utils/route-wrapper';
 import { validate } from 'utils/validation';
 
-import { Timeframe, TIMEFRAME_ROUNDING, TIMEFRAMES } from './main-controller.constants';
+import { MAX_INTERVALS, Timeframe, TIMEFRAME_ROUNDING, TIMEFRAMES } from './main-controller.constants';
 
 const router = Router();
 
@@ -206,6 +206,12 @@ router.get(
 
     const start = toNearestCeilDate(dayjs.unix(startTimestamp).toDate(), TIMEFRAME_ROUNDING[timeframe]);
     const end = toNearestDate(dayjs.unix(endTimestamp).toDate(), TIMEFRAME_ROUNDING[timeframe]);
+
+    const maxInterval = MAX_INTERVALS[timeframe];
+    const intervals = (end.getTime() - start.getTime()) / (TIMEFRAMES[timeframe] * 60 * 1000);
+    if (intervals > maxInterval) {
+      throw new BadRequestError('Invalid arguments');
+    }
 
     try {
       const intervals = await getPrices(chainId, baseTokenAddress, quoteTokenAddress, start, end, timeframe);
