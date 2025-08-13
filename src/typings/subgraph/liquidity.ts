@@ -35,6 +35,7 @@ export type LiquidityChangesResponse = {
 export type LiquidityPosition = {
   base: string;
   quote: string;
+  poolIdx: string;
   ambientLiq: string;
   time: string;
   transactionHash: string;

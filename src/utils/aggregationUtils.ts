@@ -94,6 +94,7 @@ export function aggregatePositions(positions: LiquidityPosition[]) {
     (acc, curr) => ({
       base: curr.base,
       quote: curr.quote,
+      poolIdx: curr.poolIdx,
       ambientLiq: bignumber(acc.ambientLiq).plus(curr.ambientLiq).toString(),
       time: curr.time,
       transactionHash: firstDepositTxHash,
@@ -115,6 +116,7 @@ export function aggregatePositions(positions: LiquidityPosition[]) {
     {
       base: '',
       quote: '',
+      poolIdx: '',
       ambientLiq: '0',
       time: '0',
       transactionHash: '',

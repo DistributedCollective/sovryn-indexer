@@ -107,6 +107,7 @@ export async function getUserPositions(
         return {
           base: base,
           quote: quote,
+          poolIdx: userLiquidity.pool.poolIdx,
           ambientLiq,
           time: userLiquidity.time,
           transactionHash: userLiquidity.transactionHash,
@@ -204,6 +205,7 @@ export async function getUserPositions(
           return {
             base: base,
             quote: quote,
+            poolIdx: latestPosition.pool.poolIdx,
             ambientLiq: '0',
             time: latestPosition.time,
             transactionHash: latestPosition.transactionHash,
