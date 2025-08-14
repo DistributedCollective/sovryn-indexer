@@ -15,7 +15,7 @@ const router = Router();
 router.get(
   '/',
   asyncRoute(async (req, res) => {
-    const { chainId } = req.network;
+    const { chainId } = req.app.locals.network;
     return maybeCacheResponse(
       res,
       `legacy/amm/${chainId}`,
@@ -31,7 +31,7 @@ router.get(
 router.get(
   '/pool/:pool',
   asyncRoute(async (req, res) => {
-    const { chainId } = req.network;
+    const { chainId } = req.app.locals.network;
     const { pool } = validate<{ pool: string }>(
       Joi.object({
         pool: Joi.string().required().length(42),
@@ -54,7 +54,7 @@ router.get(
 router.get(
   '/today/:pool',
   asyncRoute(async (req, res) => {
-    const { chainId } = req.network;
+    const { chainId } = req.app.locals.network;
     const { pool } = validate<{ pool: string }>(
       Joi.object({
         pool: Joi.string().required().length(42),
@@ -74,7 +74,7 @@ router.get(
 router.get(
   '/volume',
   asyncRoute(async (req, res) => {
-    const { chainId } = req.network;
+    const { chainId } = req.app.locals.network;
     return maybeCacheResponse(
       res,
       `legacy/amm/${chainId}/volume`,
@@ -90,7 +90,7 @@ router.get(
 router.get(
   '/volume/pool/:pool',
   asyncRoute(async (req, res) => {
-    const { chainId } = req.network;
+    const { chainId } = req.app.locals.network;
     const { pool } = validate<{ pool: string }>(
       Joi.object({
         pool: Joi.string().required().length(42),
@@ -112,7 +112,7 @@ router.get(
 router.get(
   '/pool-balance/:pool',
   asyncRoute(async (req, res) => {
-    const { chainId } = req.network;
+    const { chainId } = req.app.locals.network;
     const { pool } = validate<{ pool: string }>(
       Joi.object({
         pool: Joi.string().required().length(42),
@@ -123,7 +123,7 @@ router.get(
       res,
       `legacy/amm/${chainId}/pool-balance/${pool}`,
       async () => {
-        const balanceData = await getOnChainData(req.network.legacy, pool);
+        const balanceData = await getOnChainData(req.app.locals.network.legacy, pool);
         const apyData = await apyDayRepository.getLastPoolApy(chainId, pool);
         return {
           ...balanceData,

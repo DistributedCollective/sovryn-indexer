@@ -28,8 +28,8 @@ router.get(
   asyncRoute(async (req, res) =>
     maybeCacheResponse(
       res,
-      `legacy/cmc/tvl/${req.network.chainId}`,
-      async () => prepareTvlEndpoint(req.network),
+      `legacy/cmc/tvl/${req.app.locals.network.chainId}`,
+      async () => prepareTvlEndpoint(req.app.locals.network),
       LONG_CACHE_TTL,
     ).then((data) => res.json(toResponse(data))),
   ),

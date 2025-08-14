@@ -15,9 +15,9 @@ router.get(
   asyncRoute(async (req: Request, res: Response) =>
     maybeCacheResponse(
       res,
-      `/v2/${req.network.chainId}/tickers`,
+      `/v2/${req.app.locals.network.chainId}/tickers`,
       async () => {
-        const pools = await poolsRepository.listForChainAsTickers(req.network.chainId);
+        const pools = await poolsRepository.listForChainAsTickers(req.app.locals.network.chainId);
 
         return pools.map((pool) => {
           const baseUsd = bignumber(pool.baseLiquidity).mul(pool.base?.usdDailyPrices?.[0]?.value ?? 0);

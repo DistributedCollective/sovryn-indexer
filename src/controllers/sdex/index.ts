@@ -26,11 +26,11 @@ router.get(
     const { cursor, limit } = validatePaginatedRequest(req);
     return maybeCacheResponse(
       res,
-      `sdex/pool_list/${req.network.chainId}/${limit}/${cursor}`,
+      `sdex/pool_list/${req.app.locals.network.chainId}/${limit}/${cursor}`,
       async () =>
-        req.network.sdex.queryPools(limit).then((data) =>
+        req.app.locals.network.sdex.queryPools(limit).then((data) =>
           data.pools.map((item) => ({
-            chainId: req.network.chainId,
+            chainId: req.app.locals.network.chainId,
             base: item.base,
             quote: item.quote,
             poolIdx: Number(item.poolIdx),
@@ -46,8 +46,8 @@ router.get(
   asyncRoute(async (req, res) => {
     return maybeCacheResponse(
       res,
-      `sdex/volume/${req.network.chainId}`,
-      async () => prepareSdexVolume(req.network.chainId),
+      `sdex/volume/${req.app.locals.network.chainId}`,
+      async () => prepareSdexVolume(req.app.locals.network.chainId),
       DEFAULT_CACHE_TTL,
     ).then((data) => res.json(toResponse(data)));
   }),
@@ -62,7 +62,7 @@ router.get(
       res,
       `sdex/user_pool_positions/${chainId}/${user}/${base}/${quote}/${poolIdx}`,
       async () => {
-        const liquidity = await req.network.sdex.getUpdatedLiquidity(user, base, quote, poolIdx);
+        const liquidity = await req.app.locals.network.sdex.getUpdatedLiquidity(user, base, quote, poolIdx);
         return {
           liquidity,
         };

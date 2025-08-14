@@ -21,7 +21,7 @@ router.get(
   '/',
   asyncRoute(async (req: Request, res: Response) => {
     const p = validatePaginatedRequest(req);
-    const chainId = req.network.chainId;
+    const chainId = req.app.locals.network.chainId;
     const search = req.query.search ? String(req.query.search) : '';
     const showSpam = Boolean(req.query.spam);
 
@@ -88,12 +88,12 @@ router.get(
 router.get(
   '/all',
   asyncRoute(async (req: Request, res: Response) => {
-    const chainId = req.network.chainId;
+    const chainId = req.app.locals.network.chainId;
     const search = req.query.search ? String(req.query.search) : '';
     const showSpam = Boolean(req.query.spam);
     return maybeCacheResponse(
       res,
-      `/v2/${req.network.chainId}/tokens/all/${btoa(search)}/${showSpam}`,
+      `/v2/${req.app.locals.network.chainId}/tokens/all/${btoa(search)}/${showSpam}`,
       async () => {
         const items = await db
           .select({
@@ -149,7 +149,7 @@ router.get(
   '/:address',
   asyncRoute(async (req: Request, res: Response) => {
     const address = req.params.address;
-    const chainId = req.network.chainId;
+    const chainId = req.app.locals.network.chainId;
 
     return maybeCacheResponse(
       res,

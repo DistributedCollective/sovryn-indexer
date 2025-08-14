@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import Joi from 'joi';
 
 import { networks } from 'loader/networks';
-import { Chain } from 'loader/networks/chain-config';
 import { NetworkFeature } from 'loader/networks/types';
 import { BadRequestError } from 'utils/custom-error';
 import { validate } from 'utils/validation';
@@ -49,20 +48,7 @@ export const networkAwareMiddleware =
       throw new BadRequestError('Unsupported network: ' + chainId);
     }
 
-    req.network = network;
+    req.app.locals.network = network;
 
     return next();
   };
-
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace Express {
-    export interface Request {
-      network: Chain;
-    }
-
-    interface NetworkAwareRequest extends Request {
-      network: Chain;
-    }
-  }
-}

@@ -14,8 +14,8 @@ router.get(
   asyncRoute(async (req: Request, res: Response) =>
     maybeCacheResponse(
       res,
-      `/dex/${req.network.chainId}/pools`,
-      async () => poolsRepository.listForChain(req.network.chainId),
+      `/dex/${req.app.locals.network.chainId}/pools`,
+      async () => poolsRepository.listForChain(req.app.locals.network.chainId),
       DEFAULT_CACHE_TTL,
     ).then((data) => res.json(toResponse(data))),
   ),
@@ -28,7 +28,7 @@ router.get(
       res,
       'chains',
       async () => {
-        const pool = await poolsRepository.getByIdentifier(req.network.chainId, req.params.id);
+        const pool = await poolsRepository.getByIdentifier(req.app.locals.network.chainId, req.params.id);
         if (!pool) {
           throw new NotFoundError('Pool not found');
         }

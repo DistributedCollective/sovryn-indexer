@@ -24,7 +24,7 @@ router.get(
   asyncRoute(async (req, res) => {
     const { user } = validate(swapHistoryQuerySchema, req.query, { allowUnknown: true });
     const p = validatePaginatedRequest(req);
-    const cacheKey = `/v2/${req.network.chainId}/swaps/${user}/${p.limit}/${p.cursor}`;
+    const cacheKey = `/v2/${req.app.locals.network.chainId}/swaps/${user}/${p.limit}/${p.cursor}`;
 
     return maybeCacheResponse(
       res,
@@ -47,7 +47,12 @@ router.get(
             tickAt: swapsTableV2.tickAt,
           })
           .from(swapsTableV2)
-          .where(and(eq(swapsTableV2.chainId, req.network.chainId), eq(lower(swapsTableV2.user), user.toLowerCase())))
+          .where(
+            and(
+              eq(swapsTableV2.chainId, req.app.locals.network.chainId),
+              eq(lower(swapsTableV2.user), user.toLowerCase()),
+            ),
+          )
           .$dynamic();
 
         const api = createApiQuery('id', OrderBy.desc, (key) => swapsTableV2[key], p);
