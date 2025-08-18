@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, timestamp, varchar, integer, unique, serial, boolean, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, timestamp, varchar, integer, unique, serial, boolean, jsonb, char } from 'drizzle-orm/pg-core';
 
 import { chains } from './chains';
 import { tokens } from './tokens';
@@ -66,3 +66,43 @@ export const poolsTableRelations = relations(poolsTable, ({ one }) => ({
 
 export type Pool = typeof poolsTable.$inferSelect;
 export type NewPool = typeof poolsTable.$inferInsert;
+
+export const poolPositionsTable = pgTable(
+  'pool_positions',
+  {
+    id: serial('id').primaryKey(),
+    poolId: integer('pool_id').references(() => poolsTable.id, { onDelete: 'cascade' }),
+    user: char('user', { length: 42 }).notNull(), // user address
+    identifier: varchar('identifier', { length: 256 }).notNull(), // unique identifier for the position
+    extra: jsonb('extra').$type<PoolExtra>().default({}), // extra data for pool
+    // to track when pool had data updated using cronjobs (liquidity, volume, etc)
+    processedAt: timestamp('processed_at'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => ({
+    comb: unique('pool_positions_comb').on(t.poolId, t.user, t.identifier),
+  }),
+);
+
+export const poolPositionChangesTable = pgTable(
+  'pool_position_changes',
+  {
+    id: serial('id').primaryKey(),
+    poolId: integer('pool_id').references(() => poolsTable.id, { onDelete: 'cascade' }),
+    user: char('user', { length: 42 }).notNull(), // user address
+    identifier: varchar('identifier', { length: 256 }).notNull(), // unique identifier for the position
+    extra: jsonb('extra').$type<PoolExtra>().default({}), // extra data for pool
+    // to track when pool had data updated using cronjobs (liquidity, volume, etc)
+    processedAt: timestamp('processed_at'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => ({
+    comb: unique('pool_positions_comb').on(t.poolId, t.user, t.identifier),
+  }),
+);

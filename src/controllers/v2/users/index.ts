@@ -1,13 +1,14 @@
 import { Router, Request, Response } from 'express';
 
-import { toResponse } from 'utils/http-response';
 import { asyncRoute } from 'utils/route-wrapper';
 
 const router = Router();
 
 router.get(
-  '/',
-  asyncRoute(async (req: Request, res: Response) => res.json(toResponse([]))),
+  '/pools',
+  asyncRoute(async (req: Request, res: Response) => {
+    return res.json({ nt: req.app.locals.network });
+  }),
 );
 
 export default router;

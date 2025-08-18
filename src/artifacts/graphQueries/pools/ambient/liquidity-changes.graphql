@@ -1,0 +1,26 @@
+query($fromBlock: BigInt, $toBlock: BigInt) {
+  liquidityChanges(first: 1000, where: { block_gte: $fromBlock, block_lte: $toBlock },
+    orderBy: block,
+    orderDirection: desc) {
+    id
+    transactionHash
+    callIndex
+    user
+    pool {
+      base
+      quote
+      poolIdx
+    }
+    block
+    time
+    positionType
+    changeType
+    bidTick
+    askTick
+    isBid
+    liq
+    baseFlow
+    quoteFlow
+    pivotTime
+  }
+}

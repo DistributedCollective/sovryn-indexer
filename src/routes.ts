@@ -18,7 +18,7 @@ router.use('/legacy', legacyRouter);
 router.use('/v2', v2RouterBase);
 router.use('/v2/:chain', chainNameAwareMiddleware, v2Router);
 
-router.get('*', (req: Request, res: Response) => {
+router.get('*fallback', (req: Request, res: Response) => {
   return res.status(404).json({ type: 'General', error: 'Resource not found' });
 });
 

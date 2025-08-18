@@ -5,7 +5,6 @@ import { db } from 'database/client';
 import { Pool, tokens } from 'database/schema';
 import { networks } from 'loader/networks';
 import { chainIdFromHex } from 'loader/networks/utils';
-import { logger } from 'utils/logger';
 
 type PoolStats = {
   latestTime: number;
