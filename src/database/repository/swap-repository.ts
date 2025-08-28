@@ -1,8 +1,8 @@
 import dayjs from 'dayjs';
 import { eq, and, sql, gte, desc } from 'drizzle-orm';
 
-import { db } from 'database/client';
-import { NewSwap, swapsTable } from 'database/schema';
+import { db } from '~/database/client';
+import { NewSwap, swapsTable } from '~/database/schema';
 
 export type NewSwapItem = Omit<NewSwap, 'createdAt' | 'updatedAt'>;
 

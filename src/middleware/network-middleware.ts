@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import Joi from 'joi';
 
-import { networks } from 'loader/networks';
-import { NetworkFeature } from 'loader/networks/types';
-import { BadRequestError } from 'utils/custom-error';
-import { validate } from 'utils/validation';
+import { networks } from '~/loader/networks';
+import { NetworkFeature } from '~/loader/networks/types';
+import { BadRequestError } from '~/utils/custom-error';
+import { validate } from '~/utils/validation';
 
 export const validateChainId = (req: Request, optional = false) =>
   Number(

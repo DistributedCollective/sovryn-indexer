@@ -1,10 +1,10 @@
 import { and, avg, between, desc, eq, lte, max, min, or, sql } from 'drizzle-orm';
 import { bignumber } from 'mathjs';
 
-import { MEDIUM_CACHE_TTL } from 'config/constants';
-import { db } from 'database/client';
-import { usdDailyPricesTable } from 'database/schema';
-import { maybeCache } from 'utils/cache';
+import { MEDIUM_CACHE_TTL } from '~/config/constants';
+import { db } from '~/database/client';
+import { usdDailyPricesTable } from '~/database/schema';
+import { maybeCache } from '~/utils/cache';
 
 export function groupItemsInPairs<T>(items: T[]): T[][] {
   const groupedItems: T[][] = [];

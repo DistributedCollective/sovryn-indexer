@@ -2,8 +2,7 @@ import dayjs from 'dayjs';
 import { ethers } from 'ethers';
 import { bignumber } from 'mathjs';
 
-import { SdexQuery } from 'artifacts/abis/types';
-import { LiquidityChanges, LiquidityChangesResponse, PositionType } from 'typings/subgraph/liquidity';
+import { SdexQuery } from '~/artifacts/abis/types';
 import {
   aggregatePositions,
   filterPositions,
@@ -12,9 +11,9 @@ import {
   parseRangeTokensResult,
   parseRewardResult,
   weightedAverageDuration,
-} from 'utils/aggregationUtils';
-import { calculateAPR } from 'utils/aprCalculation';
-import { logger } from 'utils/logger';
+} from '~/utils/aggregationUtils';
+import { calculateAPR } from '~/utils/aprCalculation';
+import { logger } from '~/utils/logger';
 
 import { Chain } from './networks/chain-config';
 import { getErc20Balance } from './token';

@@ -1,9 +1,9 @@
 import { CronJob } from 'cron';
 
-import { networks } from 'loader/networks';
-import { LegacyChain } from 'loader/networks/legacy-chain';
-import { SdexChain } from 'loader/networks/sdex-chain';
-import { NetworkFeature } from 'loader/networks/types';
+import { networks } from '~/loader/networks';
+import { LegacyChain } from '~/loader/networks/legacy-chain';
+import { SdexChain } from '~/loader/networks/sdex-chain';
+import { NetworkFeature } from '~/loader/networks/types';
 import {
   getAmmPoolTvl,
   getFishTvl,
@@ -14,8 +14,8 @@ import {
   getStakingTvl,
   getSubprotocolTvl,
   getZeroTvl,
-} from 'loader/tvl/prepare-tvl-cronjob-data';
-import { logger } from 'utils/logger';
+} from '~/loader/tvl/prepare-tvl-cronjob-data';
+import { logger } from '~/utils/logger';
 
 const childLogger = logger.child({ module: 'crontab:tvl' });
 

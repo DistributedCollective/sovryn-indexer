@@ -4,16 +4,16 @@ import gql from 'graphql-tag';
 import _ from 'lodash';
 import { bignumber } from 'mathjs';
 
-import { MAX_DECIMAL_PLACES } from 'config/constants';
-import { db } from 'database/client';
-import { PoolExtended, poolsRepository } from 'database/repository/pools-repository';
-import { tokenRepository } from 'database/repository/token-repository';
-import { NewPool, poolsTable, PoolType } from 'database/schema';
-import { networks } from 'loader/networks';
-import { LegacyChain } from 'loader/networks/legacy-chain';
-import { areAddressesEqual } from 'utils/compare';
-import { logger } from 'utils/logger';
-import { prettyNumber } from 'utils/numbers';
+import { MAX_DECIMAL_PLACES } from '~/config/constants';
+import { db } from '~/database/client';
+import { PoolExtended, poolsRepository } from '~/database/repository/pools-repository';
+import { tokenRepository } from '~/database/repository/token-repository';
+import { NewPool, poolsTable, PoolType } from '~/database/schema';
+import { networks } from '~/loader/networks';
+import { LegacyChain } from '~/loader/networks/legacy-chain';
+import { areAddressesEqual } from '~/utils/compare';
+import { logger } from '~/utils/logger';
+import { prettyNumber } from '~/utils/numbers';
 
 import { markTokensAsSwapable } from './utils';
 

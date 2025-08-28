@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 
-import { db } from 'database/client';
+import { db } from '~/database/client';
 
 // use result of [EXPLAIN] and submit it to https://explain.depesz.com/ to get a better visualization
 export async function analyzeSelectQuery(q: any, label?: string) {

@@ -1,10 +1,10 @@
 import { eq } from 'drizzle-orm';
 
-import { getDailyPoolVolume } from 'cronjobs/dex/pools/ambient-pool-tasks';
-import { db } from 'database/client';
-import { poolsTable } from 'database/schema';
-import { networks } from 'loader/networks';
-import { logger } from 'utils/logger';
+import { getDailyPoolVolume } from '~/cronjobs/dex/pools/ambient-pool-tasks';
+import { db } from '~/database/client';
+import { poolsTable } from '~/database/schema';
+import { networks } from '~/loader/networks';
+import { logger } from '~/utils/logger';
 
 export default async function run() {
   logger.info('Check pool data');

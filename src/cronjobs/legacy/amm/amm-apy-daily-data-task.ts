@@ -3,15 +3,15 @@ import dayjs from 'dayjs';
 import gql from 'graphql-tag';
 import { BigNumber, bignumber } from 'mathjs';
 
-import { apyBlockRepository, DailyAggregatedApyResult } from 'database/repository/apy-block-repository';
-import { apyDayRepository } from 'database/repository/apy-day-repository';
-import { tokenRepository } from 'database/repository/token-repository';
-import { ammApyDays, NewAmmApyDay } from 'database/schema';
-import { networks } from 'loader/networks';
-import { LegacyChain } from 'loader/networks/legacy-chain';
-import { NetworkFeature } from 'loader/networks/types';
-import { getLastUsdPrice } from 'loader/price';
-import { logger } from 'utils/logger';
+import { apyBlockRepository, DailyAggregatedApyResult } from '~/database/repository/apy-block-repository';
+import { apyDayRepository } from '~/database/repository/apy-day-repository';
+import { tokenRepository } from '~/database/repository/token-repository';
+import { ammApyDays, NewAmmApyDay } from '~/database/schema';
+import { networks } from '~/loader/networks';
+import { LegacyChain } from '~/loader/networks/legacy-chain';
+import { NetworkFeature } from '~/loader/networks/types';
+import { getLastUsdPrice } from '~/loader/price';
+import { logger } from '~/utils/logger';
 
 const childLogger = logger.child({ module: 'crontab:legacy:amm_apy_daily_data' });
 

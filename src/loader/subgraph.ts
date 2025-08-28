@@ -1,8 +1,8 @@
 import { DocumentNode, print } from 'graphql';
 
-import { HttpClient } from 'utils/http-client';
-import { logger } from 'utils/logger';
-import { sleep } from 'utils/sleep';
+import { HttpClient } from '~/utils/http-client';
+import { logger } from '~/utils/logger';
+import { sleep } from '~/utils/sleep';
 
 const SUBGRAPH_RETRY_MS = 5_000; // 5 seconds
 

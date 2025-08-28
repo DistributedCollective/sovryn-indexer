@@ -2,9 +2,9 @@ import dayjs from 'dayjs';
 import { sql, and, eq, inArray } from 'drizzle-orm';
 import { bignumber } from 'mathjs';
 
-import { db } from 'database/client';
-import { tokens, usdDailyPricesTable, usdHourlyPricesTable, usdPricesTable } from 'database/schema';
-import { networks } from 'loader/networks';
+import { db } from '~/database/client';
+import { tokens, usdDailyPricesTable, usdHourlyPricesTable, usdPricesTable } from '~/database/schema';
+import { networks } from '~/loader/networks';
 
 export type Token = {
   id: number;

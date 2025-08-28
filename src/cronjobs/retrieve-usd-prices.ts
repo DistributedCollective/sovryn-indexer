@@ -1,9 +1,9 @@
 import { CronJob } from 'cron';
 import _ from 'lodash';
 
-import { usdPriceLoader } from 'loader/usd-prices/usd-price-loader';
-import { floorDate } from 'utils/date';
-import { logger } from 'utils/logger';
+import { usdPriceLoader } from '~/loader/usd-prices/usd-price-loader';
+import { floorDate } from '~/utils/date';
+import { logger } from '~/utils/logger';
 
 const childLogger = logger.child({ module: 'crontab:retrieve-usd-prices' });
 

@@ -3,15 +3,15 @@ import { and, eq, between, lte, desc, or, inArray } from 'drizzle-orm';
 import _ from 'lodash';
 import { BigNumber, bignumber, max, min } from 'mathjs';
 
-import { LONG_CACHE_TTL } from 'config/constants';
-import { Timeframe, TIMEFRAME_ROUNDING } from 'controllers/main-controller.constants';
-import { db } from 'database/client';
-import { tokens, usdDailyPricesTable, usdHourlyPricesTable, usdPricesTable, UsdPricesTables } from 'database/schema';
-import { maybeCache } from 'utils/cache';
-import { ValidationError } from 'utils/custom-error';
-import { toNearestDate } from 'utils/date';
-import { logger } from 'utils/logger';
-import { prettyNumber } from 'utils/numbers';
+import { LONG_CACHE_TTL } from '~/config/constants';
+import { Timeframe, TIMEFRAME_ROUNDING } from '~/controllers/main-controller.constants';
+import { db } from '~/database/client';
+import { tokens, usdDailyPricesTable, usdHourlyPricesTable, usdPricesTable, UsdPricesTables } from '~/database/schema';
+import { maybeCache } from '~/utils/cache';
+import { ValidationError } from '~/utils/custom-error';
+import { toNearestDate } from '~/utils/date';
+import { logger } from '~/utils/logger';
+import { prettyNumber } from '~/utils/numbers';
 
 import { Interval } from './types';
 

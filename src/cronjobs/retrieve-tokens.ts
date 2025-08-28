@@ -3,16 +3,16 @@ import { and, eq, inArray, sql } from 'drizzle-orm';
 import { ZeroAddress } from 'ethers';
 import _, { difference, uniq } from 'lodash';
 
-import { ERC20__factory } from 'artifacts/abis/types';
-import { db } from 'database/client';
-import { NewToken, tokens } from 'database/schema';
-import { networks } from 'loader/networks';
-import { Chain } from 'loader/networks/chain-config';
-import { LegacyChain } from 'loader/networks/legacy-chain';
-import { LiquidityChain } from 'loader/networks/liquidity-chain';
-import { SdexChain } from 'loader/networks/sdex-chain';
-import { NetworkFeature } from 'loader/networks/types';
-import { logger } from 'utils/logger';
+import { ERC20__factory } from '~/artifacts/abis/types';
+import { db } from '~/database/client';
+import { NewToken, tokens } from '~/database/schema';
+import { networks } from '~/loader/networks';
+import { Chain } from '~/loader/networks/chain-config';
+import { LegacyChain } from '~/loader/networks/legacy-chain';
+import { LiquidityChain } from '~/loader/networks/liquidity-chain';
+import { SdexChain } from '~/loader/networks/sdex-chain';
+import { NetworkFeature } from '~/loader/networks/types';
+import { logger } from '~/utils/logger';
 
 const childLogger = logger.child({ module: 'crontab:retrieve-tokens' });
 

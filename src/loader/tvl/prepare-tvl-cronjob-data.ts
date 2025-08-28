@@ -4,16 +4,16 @@ import gql from 'graphql-tag';
 import { isNil, uniq } from 'lodash';
 import { bignumber } from 'mathjs';
 
-import { db } from 'database/client';
-import { tokenRepository } from 'database/repository/token-repository';
-import { NewTvlItem, tvlRepository } from 'database/repository/tvl-repository';
-import { NewToken, tokens, TvlGroup } from 'database/schema';
-import { Chain } from 'loader/networks/chain-config';
-import { LegacyChain } from 'loader/networks/legacy-chain';
-import { SdexChain } from 'loader/networks/sdex-chain';
-import { findTokenByAddress, getErc20Balance, getErc20TotalSupply } from 'loader/token';
-import { logger } from 'utils/logger';
-import { prettyNumber } from 'utils/numbers';
+import { db } from '~/database/client';
+import { tokenRepository } from '~/database/repository/token-repository';
+import { NewTvlItem, tvlRepository } from '~/database/repository/tvl-repository';
+import { NewToken, tokens, TvlGroup } from '~/database/schema';
+import { Chain } from '~/loader/networks/chain-config';
+import { LegacyChain } from '~/loader/networks/legacy-chain';
+import { SdexChain } from '~/loader/networks/sdex-chain';
+import { findTokenByAddress, getErc20Balance, getErc20TotalSupply } from '~/loader/token';
+import { logger } from '~/utils/logger';
+import { prettyNumber } from '~/utils/numbers';
 
 export async function getAmmPoolTvl(chain: LegacyChain) {
   const { liquidityPools } = await chain.queryFromSubgraph<{

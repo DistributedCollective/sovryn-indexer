@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { CustomError } from 'utils/custom-error';
+import { CustomError } from '~/utils/custom-error';
 
 export const checkAuthorization = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.get('Authorization')?.replace('Bearer ', '')?.trim();

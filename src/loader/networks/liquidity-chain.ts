@@ -1,9 +1,8 @@
 import { DocumentNode } from 'graphql';
 import gql from 'graphql-tag';
 
-import { queryFromSubgraph } from 'loader/subgraph';
-import { BinsResponse } from 'typings/subgraph/liquidity';
-import { loadGqlFromArtifacts } from 'utils/subgraph';
+import { queryFromSubgraph } from '~/loader/subgraph';
+import { loadGqlFromArtifacts } from '~/utils/subgraph';
 
 import type { Chain } from './chain-config';
 import type { LiquidityChainConfig } from './types';

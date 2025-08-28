@@ -1,5 +1,5 @@
-import { logger } from 'utils/logger';
-import { sleep } from 'utils/sleep';
+import { logger } from '~/utils/logger';
+import { sleep } from '~/utils/sleep';
 
 import migrate from './migrate';
 

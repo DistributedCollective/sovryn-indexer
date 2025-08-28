@@ -1,12 +1,12 @@
 import { Router, Request, Response } from 'express';
 import { bignumber } from 'mathjs';
 
-import { DEFAULT_CACHE_TTL, DEFAULT_USD_DECIMAL_PLACES } from 'config/constants';
-import { poolsRepository } from 'database/repository/pools-repository';
-import { maybeCacheResponse } from 'utils/cache';
-import { toResponse } from 'utils/http-response';
-import { prettyNumber } from 'utils/numbers';
-import { asyncRoute } from 'utils/route-wrapper';
+import { DEFAULT_CACHE_TTL, DEFAULT_USD_DECIMAL_PLACES } from '~/config/constants';
+import { poolsRepository } from '~/database/repository/pools-repository';
+import { maybeCacheResponse } from '~/utils/cache';
+import { toResponse } from '~/utils/http-response';
+import { prettyNumber } from '~/utils/numbers';
+import { asyncRoute } from '~/utils/route-wrapper';
 
 const router = Router();
 

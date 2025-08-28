@@ -1,9 +1,9 @@
 import { DrizzleError } from 'drizzle-orm';
 import { Request, Response, NextFunction } from 'express';
 
-import config from 'config';
-import { CustomError } from 'utils/custom-error';
-import { logger } from 'utils/logger';
+import config from '~/config';
+import { CustomError } from '~/utils/custom-error';
+import { logger } from '~/utils/logger';
 
 export const errorHandler = (err: CustomError, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof DrizzleError) {

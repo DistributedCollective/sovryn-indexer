@@ -2,11 +2,11 @@ import { CronJob } from 'cron';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { uniqBy } from 'lodash';
 
-import { GIT_TOKEN_LIST_URL } from 'config/constants';
-import { db } from 'database/client';
-import { NewToken, Token, tokens } from 'database/schema/tokens';
-import { networks } from 'loader/networks';
-import { logger } from 'utils/logger';
+import { GIT_TOKEN_LIST_URL } from '~/config/constants';
+import { db } from '~/database/client';
+import { NewToken, Token, tokens } from '~/database/schema/tokens';
+import { networks } from '~/loader/networks';
+import { logger } from '~/utils/logger';
 
 type TokenData = {
   name: string;

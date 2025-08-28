@@ -1,10 +1,10 @@
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { ZeroAddress } from 'ethers';
 
-import { db } from 'database/client';
-import { lower } from 'database/helpers';
-import { tokens, usdDailyPricesTable } from 'database/schema';
-import { Chain } from 'loader/networks/chain-config';
+import { db } from '~/database/client';
+import { lower } from '~/database/helpers';
+import { tokens, usdDailyPricesTable } from '~/database/schema';
+import { Chain } from '~/loader/networks/chain-config';
 
 export const tokenRepository = {
   listForChain: (chainId: number) =>

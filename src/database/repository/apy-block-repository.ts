@@ -1,7 +1,7 @@
 import { and, desc, eq, gte, sql } from 'drizzle-orm';
 
-import { db } from 'database/client';
-import { ammApyBlocks, NewAmmApyBlock } from 'database/schema';
+import { db } from '~/database/client';
+import { ammApyBlocks, NewAmmApyBlock } from '~/database/schema';
 
 export type DailyAggregatedApyResult = {
   pool: string;

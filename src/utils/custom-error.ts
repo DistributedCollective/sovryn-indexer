@@ -1,5 +1,5 @@
-import config from 'config';
-import { ErrorResponse, ErrorType, ErrorValidation } from 'types';
+import config from '~/config';
+import { ErrorResponse, ErrorType, ErrorValidation } from '~/types';
 
 export class CustomError extends Error {
   private httpStatusCode: number;

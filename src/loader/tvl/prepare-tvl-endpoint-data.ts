@@ -1,13 +1,13 @@
 import { isNil } from 'lodash';
 import { bignumber } from 'mathjs';
 
-import { tvlRepository } from 'database/repository/tvl-repository';
-import { TvlGroup } from 'database/schema';
-import { Chain } from 'loader/networks/chain-config';
-import { NetworkFeature } from 'loader/networks/types';
-import { findUsdPrice, getLastPrices } from 'loader/price';
-import { logger } from 'utils/logger';
-import { prettyNumber } from 'utils/numbers';
+import { tvlRepository } from '~/database/repository/tvl-repository';
+import { TvlGroup } from '~/database/schema';
+import { Chain } from '~/loader/networks/chain-config';
+import { NetworkFeature } from '~/loader/networks/types';
+import { findUsdPrice, getLastPrices } from '~/loader/price';
+import { logger } from '~/utils/logger';
+import { prettyNumber } from '~/utils/numbers';
 
 function makeGroups(chain: Chain) {
   if (chain.hasFeature(NetworkFeature.legacy) && chain.hasFeature(NetworkFeature.sdex)) {

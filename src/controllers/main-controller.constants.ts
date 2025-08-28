@@ -1,4 +1,4 @@
-import { NearestType } from 'utils/date';
+import { NearestType } from '~/utils/date';
 
 export const TIMEFRAMES = {
   '1m': 1,

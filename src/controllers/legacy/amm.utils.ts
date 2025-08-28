@@ -3,9 +3,9 @@ import gql from 'graphql-tag';
 import { isNil } from 'lodash';
 import { bignumber } from 'mathjs';
 
-import { LiquidityPoolV1Converter__factory, LiquidityPoolV2Converter__factory } from 'artifacts/abis/types';
-import { AmmApyDay } from 'database/schema';
-import { LegacyChain, QueryAmmApyDataForBlock } from 'loader/networks/legacy-chain';
+import { LiquidityPoolV1Converter__factory, LiquidityPoolV2Converter__factory } from '~/artifacts/abis/types';
+import { AmmApyDay } from '~/database/schema';
+import { LegacyChain, QueryAmmApyDataForBlock } from '~/loader/networks/legacy-chain';
 
 type BalanceHistory = Array<{
   activity_date: Date;

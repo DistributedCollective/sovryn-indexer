@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 
-import { asyncRoute } from 'utils/route-wrapper';
+import { asyncRoute } from '~/utils/route-wrapper';
 
 const router = Router();
 

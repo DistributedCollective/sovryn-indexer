@@ -5,12 +5,12 @@ import gql from 'graphql-tag';
 import _, { isNil } from 'lodash';
 import { bignumber } from 'mathjs';
 
-import { db } from 'database/client';
-import { tAmmPools, tokens } from 'database/schema';
-import { networks } from 'loader/networks';
-import { LegacyChain } from 'loader/networks/legacy-chain';
-import { NetworkFeature } from 'loader/networks/types';
-import { logger } from 'utils/logger';
+import { db } from '~/database/client';
+import { tAmmPools, tokens } from '~/database/schema';
+import { networks } from '~/loader/networks';
+import { LegacyChain } from '~/loader/networks/legacy-chain';
+import { NetworkFeature } from '~/loader/networks/types';
+import { logger } from '~/utils/logger';
 
 const childLogger = logger.child({ module: 'crontab:legacy:amm_pools' });
 
