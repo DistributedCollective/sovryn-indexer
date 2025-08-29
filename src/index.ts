@@ -5,7 +5,6 @@ import '~/utils/shutdown';
 import { startApp } from '~/app';
 import { startCrontab } from '~/crontab';
 import { logger } from '~/utils/logger';
-import './jobs/queues';
 
 startApp();
 
