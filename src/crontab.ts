@@ -9,8 +9,11 @@ import { ammCleanUpTask } from '~/cronjobs/legacy/amm/amm-cleanup-task';
 import { ammPoolsTask } from '~/cronjobs/legacy/amm/amm-pools-task';
 import { tvlTask } from '~/cronjobs/legacy/tvl-task';
 import { retrieveUsdPrices } from '~/cronjobs/retrieve-usd-prices';
+import { ingestQueue } from '~/jobs/queues';
 import { updateChains } from '~/loader/networks';
 import { getLastPrices } from '~/loader/price';
+import { sources } from '~/sources';
+import { logger } from '~/utils/logger';
 
 export const tickWrapper = (fn: (context: CronJob) => Promise<void>) => {
   return async function () {
@@ -23,6 +26,8 @@ export const startCrontab = async () => {
   await updateChains();
 
   runOnInit();
+
+  return;
 
   dexJobs();
 
@@ -48,17 +53,23 @@ export const startCrontab = async () => {
 };
 
 function runOnInit() {
-  // Update supported token list from the github repository on startup and every minute
+  // // Update supported token list from the github repository on startup and every minute
+  // CronJob.from({
+  //   cronTime: '*/1 * * * *',
+  //   onTick: tickWrapper(tokenFetcherTask),
+  //   runOnInit: true,
+  // }).start();
+
+  // // Retrieve USD prices of tokens every minute
+  // CronJob.from({
+  //   cronTime: '*/5 * * * *',
+  //   onTick: tickWrapper(retrieveUsdPrices),
+  //   runOnInit: true,
+  // }).start();
+
   CronJob.from({
     cronTime: '*/1 * * * *',
-    onTick: tickWrapper(tokenFetcherTask),
-    runOnInit: true,
-  }).start();
-
-  // Retrieve USD prices of tokens every minute
-  CronJob.from({
-    cronTime: '*/5 * * * *',
-    onTick: tickWrapper(retrieveUsdPrices),
+    onTick: tickWrapper(startPoller),
     runOnInit: true,
   }).start();
 }
@@ -120,4 +131,16 @@ function tempJobs() {
   //   onTick: tickWrapper(priceFeedTask),
   //   runOnInit: true,
   // }).start();
+}
+
+export async function startPoller() {
+  logger.info('start pooler');
+  for (const s of sources) {
+    logger.info(`Adding poll job for source: ${s.key}`);
+    await ingestQueue.add(
+      'poll',
+      { source: s.key },
+      { removeOnComplete: 1000, deduplication: { id: `source:${s.key}` } },
+    );
+  }
 }
