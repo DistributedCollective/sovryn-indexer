@@ -1,12 +1,5 @@
 import { bignumber } from 'mathjs';
 
-import {
-  LiquidityChangesResponse,
-  LiquidityChanges,
-  LiquidityPosition,
-  PositionType,
-} from 'typings/subgraph/liquidity';
-
 import { areAddressesEqual } from './compare';
 
 const MIN_NUMERIC_STABLE_FLOW = 1e-9;

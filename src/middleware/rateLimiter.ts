@@ -2,8 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import Redis from 'ioredis';
 import { RateLimiterRedis } from 'rate-limiter-flexible';
 
-import config from 'config';
-import { HttpError } from 'utils/custom-error';
+import config from '~/config';
+import { HttpError } from '~/utils/custom-error';
 
 interface RateLimiterOptions {
   keyPrefix: string;

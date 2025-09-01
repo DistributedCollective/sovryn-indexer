@@ -1,8 +1,8 @@
 import { workerData, Worker, isMainThread, parentPort, threadId } from 'node:worker_threads';
 
-import { Timeframe, TIMEFRAMES } from 'controllers/main-controller.constants';
-import { constructCandlesticks, getPrices } from 'loader/chart/utils';
-import { logger } from 'utils/logger';
+import { Timeframe, TIMEFRAMES } from '~/controllers/main-controller.constants';
+import { constructCandlesticks, getPrices } from '~/loader/chart/utils';
+import { logger } from '~/utils/logger';
 
 export function buildCandlesticksOnWorker(
   chainId: number,

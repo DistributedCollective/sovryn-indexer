@@ -1,9 +1,9 @@
 import { BlockTag } from 'ethers';
 
-import { SdexChain } from 'loader/networks/sdex-chain';
-import { bfsShortestPath, constructGraph } from 'utils/bfs';
-import { logger } from 'utils/logger';
-import { decodeCrocPrice, toDisplayPrice } from 'utils/price';
+import { SdexChain } from '~/loader/networks/sdex-chain';
+import { bfsShortestPath, constructGraph } from '~/utils/bfs';
+import { logger } from '~/utils/logger';
+import { decodeCrocPrice, toDisplayPrice } from '~/utils/price';
 
 export type PoolWithIndex = [string, string, number];
 export type Pool = [string, string];

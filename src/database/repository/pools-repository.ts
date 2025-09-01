@@ -1,10 +1,10 @@
 import dayjs from 'dayjs';
 import { and, asc, desc, eq, isNull, lt, or, sql } from 'drizzle-orm';
 
-import { db } from 'database/client';
-import { lower } from 'database/helpers';
-import { Token, tokens, usdDailyPricesTable } from 'database/schema';
-import { NewPool, Pool, poolsTable } from 'database/schema/pools';
+import { db } from '~/database/client';
+import { lower } from '~/database/helpers';
+import { Token, tokens, usdDailyPricesTable } from '~/database/schema';
+import { NewPool, Pool, poolsTable } from '~/database/schema/pools';
 
 const TEN_MINUTES = 10 * 60 * 1000;
 

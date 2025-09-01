@@ -1,7 +1,7 @@
 import { bignumber } from 'mathjs';
 
-import { swapRepositoryV2 } from 'database/repository/swap-repository-v2';
-import { areAddressesEqual } from 'utils/compare';
+import { swapRepositoryV2 } from '~/database/repository/swap-repository-v2';
+import { areAddressesEqual } from '~/utils/compare';
 
 export async function prepareSdexVolume(chainId: number, days = 1) {
   const last24hSwaps = await swapRepositoryV2.loadSwaps(days, chainId);

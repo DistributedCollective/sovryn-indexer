@@ -4,10 +4,10 @@ import { cwd } from 'process';
 
 import { sql } from 'drizzle-orm';
 
-import config from 'config';
-import { db } from 'database/client';
-import { chains } from 'database/schema/chains';
-import { logger } from 'utils/logger';
+import config from '~/config';
+import { db } from '~/database/client';
+import { chains } from '~/database/schema/chains';
+import { logger } from '~/utils/logger';
 
 import { Chain } from './chain-config';
 import { NetworkConfigFile } from './types';

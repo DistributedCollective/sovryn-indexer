@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 
-import { db } from 'database/client';
-import { flags } from 'database/schema/flags';
+import { db } from '~/database/client';
+import { flags } from '~/database/schema/flags';
 
 export const getFlag = async (key: string): Promise<string | null> => {
   const flag = await getFlagRow(key);

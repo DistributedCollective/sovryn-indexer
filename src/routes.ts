@@ -1,13 +1,13 @@
 import { Router, Request, Response } from 'express';
 
-import legacyRouter from 'controllers/legacy';
-import mainController from 'controllers/main-controller';
-import sdexRouter from 'controllers/sdex';
-import v2Router from 'controllers/v2';
-import v2RouterBase from 'controllers/v2/v2base';
-import { NetworkFeature } from 'loader/networks/types';
-import { chainNameAwareMiddleware } from 'middleware/chain-name-middleware';
-import { networkAwareMiddleware } from 'middleware/network-middleware';
+import legacyRouter from '~/controllers/legacy';
+import mainController from '~/controllers/main-controller';
+import sdexRouter from '~/controllers/sdex';
+import v2Router from '~/controllers/v2';
+import v2RouterBase from '~/controllers/v2/v2base';
+import { NetworkFeature } from '~/loader/networks/types';
+import { chainNameAwareMiddleware } from '~/middleware/chain-name-middleware';
+import { networkAwareMiddleware } from '~/middleware/network-middleware';
 
 const router = Router();
 

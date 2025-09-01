@@ -1,9 +1,9 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
-import config from 'config';
-import { logger } from 'utils/logger';
-import { onShutdown } from 'utils/shutdown';
+import config from '~/config';
+import { logger } from '~/utils/logger';
+import { onShutdown } from '~/utils/shutdown';
 
 import * as schemas from './schema';
 

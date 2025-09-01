@@ -4,12 +4,12 @@ import express from 'express';
 import helmet from 'helmet';
 import pino from 'pino-http';
 
-import config from 'config';
-import { errorHandler } from 'middleware/error-handler';
-import createRateLimiterMiddleware from 'middleware/rateLimiter';
-import routes from 'routes';
-import { logger } from 'utils/logger';
-import { onShutdown } from 'utils/shutdown';
+import config from '~/config';
+import { errorHandler } from '~/middleware/error-handler';
+import createRateLimiterMiddleware from '~/middleware/rateLimiter';
+import routes from '~/routes';
+import { logger } from '~/utils/logger';
+import { onShutdown } from '~/utils/shutdown';
 
 const rateLimiterMiddleware = createRateLimiterMiddleware({
   keyPrefix: 'rate-limiter',

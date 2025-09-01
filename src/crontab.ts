@@ -1,16 +1,16 @@
 import { CronJob } from 'cron';
 
-import { updateDexPoolList, updateDexPoolListData } from 'cronjobs/dex/pools';
-import { swapTasks } from 'cronjobs/dex/swaps/swaps-tasks';
-import { tokenFetcherTask } from 'cronjobs/dex/token-fetcher-task';
-import { ammApyBlockTask } from 'cronjobs/legacy/amm/amm-apy-block-task';
-import { ammApyDailyDataTask } from 'cronjobs/legacy/amm/amm-apy-daily-data-task';
-import { ammCleanUpTask } from 'cronjobs/legacy/amm/amm-cleanup-task';
-import { ammPoolsTask } from 'cronjobs/legacy/amm/amm-pools-task';
-import { tvlTask } from 'cronjobs/legacy/tvl-task';
-import { retrieveUsdPrices } from 'cronjobs/retrieve-usd-prices';
-import { updateChains } from 'loader/networks';
-import { getLastPrices } from 'loader/price';
+import { updateDexPoolList, updateDexPoolListData } from '~/cronjobs/dex/pools';
+import { swapTasks } from '~/cronjobs/dex/swaps/swaps-tasks';
+import { tokenFetcherTask } from '~/cronjobs/dex/token-fetcher-task';
+import { ammApyBlockTask } from '~/cronjobs/legacy/amm/amm-apy-block-task';
+import { ammApyDailyDataTask } from '~/cronjobs/legacy/amm/amm-apy-daily-data-task';
+import { ammCleanUpTask } from '~/cronjobs/legacy/amm/amm-cleanup-task';
+import { ammPoolsTask } from '~/cronjobs/legacy/amm/amm-pools-task';
+import { tvlTask } from '~/cronjobs/legacy/tvl-task';
+import { retrieveUsdPrices } from '~/cronjobs/retrieve-usd-prices';
+import { updateChains } from '~/loader/networks';
+import { getLastPrices } from '~/loader/price';
 
 export const tickWrapper = (fn: (context: CronJob) => Promise<void>) => {
   return async function () {

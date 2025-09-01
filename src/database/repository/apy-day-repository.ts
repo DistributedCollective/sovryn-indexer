@@ -1,8 +1,8 @@
 import dayjs from 'dayjs';
 import { and, asc, desc, eq, gte, sql } from 'drizzle-orm';
 
-import { db } from 'database/client';
-import { ammApyDays, NewAmmApyDay } from 'database/schema';
+import { db } from '~/database/client';
+import { ammApyDays, NewAmmApyDay } from '~/database/schema';
 
 const DEFAULT_DATA_RANGE = 7; // 7 days
 

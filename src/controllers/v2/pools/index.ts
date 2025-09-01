@@ -1,11 +1,11 @@
 import { Router, Request, Response } from 'express';
 
-import { DEFAULT_CACHE_TTL } from 'config/constants';
-import { poolsRepository } from 'database/repository/pools-repository';
-import { maybeCacheResponse } from 'utils/cache';
-import { NotFoundError } from 'utils/custom-error';
-import { toResponse } from 'utils/http-response';
-import { asyncRoute } from 'utils/route-wrapper';
+import { DEFAULT_CACHE_TTL } from '~/config/constants';
+import { poolsRepository } from '~/database/repository/pools-repository';
+import { maybeCacheResponse } from '~/utils/cache';
+import { NotFoundError } from '~/utils/custom-error';
+import { toResponse } from '~/utils/http-response';
+import { asyncRoute } from '~/utils/route-wrapper';
 
 const router = Router();
 

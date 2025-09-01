@@ -2,9 +2,9 @@ import { CronJob } from 'cron';
 import dayjs from 'dayjs';
 import { lt } from 'drizzle-orm';
 
-import { db } from 'database/client';
-import { ammApyBlocks } from 'database/schema';
-import { logger } from 'utils/logger';
+import { db } from '~/database/client';
+import { ammApyBlocks } from '~/database/schema';
+import { logger } from '~/utils/logger';
 
 const childLogger = logger.child({ module: 'crontab:legacy:amm_apy_clean_up' });
 

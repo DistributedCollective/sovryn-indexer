@@ -1,8 +1,6 @@
 import { relations } from 'drizzle-orm';
 import { pgTable, serial, varchar, integer, timestamp, unique, jsonb, char } from 'drizzle-orm/pg-core';
 
-import { SwapExtra } from 'typings/subgraph/liquidity';
-
 import { chains } from './chains';
 import { poolsTable } from './pools';
 import { tokens } from './tokens';

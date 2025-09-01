@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { Request, Response, NextFunction } from 'express';
 
-import { BadRequestError } from 'utils/custom-error';
+import { BadRequestError } from '~/utils/custom-error';
 
 export const userAwareMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const address = req.params.address?.toLowerCase();

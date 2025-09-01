@@ -1,10 +1,10 @@
 /* eslint-disable import/order */
-import config from 'config';
-import 'utils/shutdown';
+import config from '~/config';
+import '~/utils/shutdown';
 
-import { startApp } from 'app';
-import { startCrontab } from 'crontab';
-import { logger } from 'utils/logger';
+import { startApp } from '~/app';
+import { startCrontab } from '~/crontab';
+import { logger } from '~/utils/logger';
 
 startApp();
 

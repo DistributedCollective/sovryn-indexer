@@ -1,8 +1,8 @@
 import dayjs from 'dayjs';
 import { eq, inArray, sql, and } from 'drizzle-orm';
 
-import { db } from 'database/client';
-import { NewTvlTableItem, tokens, tvlTable } from 'database/schema';
+import { db } from '~/database/client';
+import { NewTvlTableItem, tokens, tvlTable } from '~/database/schema';
 
 export type NewTvlItem = Omit<NewTvlTableItem, 'date'>;
 

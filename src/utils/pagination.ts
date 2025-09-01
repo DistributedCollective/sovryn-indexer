@@ -3,7 +3,7 @@ import { PgColumn, PgSelect } from 'drizzle-orm/pg-core';
 import { Request } from 'express';
 import Joi from 'joi';
 
-import { db } from 'database/client';
+import { db } from '~/database/client';
 
 import { validate } from './validation';
 

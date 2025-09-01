@@ -2,12 +2,12 @@ import { CronJob } from 'cron';
 import _, { isNil } from 'lodash';
 import { bignumber } from 'mathjs';
 
-import { apyBlockRepository } from 'database/repository/apy-block-repository';
-import { ammApyBlocks, NewAmmApyBlock } from 'database/schema';
-import { networks } from 'loader/networks';
-import { LegacyChain, QueryAmmApyDataForBlock } from 'loader/networks/legacy-chain';
-import { NetworkFeature } from 'loader/networks/types';
-import { logger } from 'utils/logger';
+import { apyBlockRepository } from '~/database/repository/apy-block-repository';
+import { ammApyBlocks, NewAmmApyBlock } from '~/database/schema';
+import { networks } from '~/loader/networks';
+import { LegacyChain, QueryAmmApyDataForBlock } from '~/loader/networks/legacy-chain';
+import { NetworkFeature } from '~/loader/networks/types';
+import { logger } from '~/utils/logger';
 
 const childLogger = logger.child({ module: 'crontab:legacy:amm_apy_blocks' });
 

@@ -1,8 +1,8 @@
 import { Router, Request, Response } from 'express';
 
-import { networks } from 'loader/networks';
-import { toResponse } from 'utils/http-response';
-import { asyncRoute } from 'utils/route-wrapper';
+import { networks } from '~/loader/networks';
+import { toResponse } from '~/utils/http-response';
+import { asyncRoute } from '~/utils/route-wrapper';
 
 const router = Router();
 

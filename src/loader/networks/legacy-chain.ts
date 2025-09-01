@@ -1,10 +1,9 @@
 import type { DocumentNode } from 'graphql';
 import gql from 'graphql-tag';
 
-import { StabilityPool, StabilityPool__factory, TroveManager, TroveManager__factory } from 'artifacts/abis/types';
-import { queryFromSubgraph } from 'loader/subgraph';
-import { SwapsResponse } from 'typings/subgraph/liquidity';
-import { loadGqlFromArtifacts } from 'utils/subgraph';
+import { StabilityPool, StabilityPool__factory, TroveManager, TroveManager__factory } from '~/artifacts/abis/types';
+import { queryFromSubgraph } from '~/loader/subgraph';
+import { loadGqlFromArtifacts } from '~/utils/subgraph';
 
 import type { Chain } from './chain-config';
 import type { LegacyChainConfig } from './types';

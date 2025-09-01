@@ -14,9 +14,12 @@
     "experimentalDecorators": true,
     "resolveJsonModule": true,
     "typeRoots": ["./node_modules/@types", "./src/typings"],
-    "baseUrl": "src/",
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "baseUrl": ".",
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "~/*": ["./src/*"]
+    }
   },
   "include": ["app-env.d.ts", "./src/**/*.tsx", "./src/**/*.ts", ".src/__tests__/**/*"],
   "exclude": ["node_modules", "./src/artifacts/**/*.ts", "test/**/*.ts", ]

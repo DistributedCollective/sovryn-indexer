@@ -3,10 +3,10 @@ import { eq, and } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { bignumber, max as bnMax, min as bnMin } from 'mathjs';
 
-import { db } from 'database/client';
-import { chains, tAmmPools, tokens } from 'database/schema';
-import { getPricesInRange } from 'loader/price';
-import { prettyNumber } from 'utils/numbers';
+import { db } from '~/database/client';
+import { chains, tAmmPools, tokens } from '~/database/schema';
+import { getPricesInRange } from '~/loader/price';
+import { prettyNumber } from '~/utils/numbers';
 
 export async function prepareSummary() {
   const base = alias(tokens, 'base');

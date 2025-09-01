@@ -1,7 +1,7 @@
 import { JsonRpcProvider } from 'ethers';
 
-import { Multicall, Multicall__factory } from 'artifacts/abis/types';
-import { getProvider } from 'utils/rpc/rpc';
+import { Multicall, Multicall__factory } from '~/artifacts/abis/types';
+import { getProvider } from '~/utils/rpc/rpc';
 
 import { LegacyChain } from './legacy-chain';
 import { LiquidityChain } from './liquidity-chain';

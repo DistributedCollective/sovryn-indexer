@@ -1,7 +1,7 @@
 import { Provider, ZeroAddress } from 'ethers';
 
-import { ERC20__factory } from 'artifacts/abis/types';
-import { tokens } from 'database/schema';
+import { ERC20__factory } from '~/artifacts/abis/types';
+import { tokens } from '~/database/schema';
 
 export const getErc20Balance = (provider: Provider, tokenAddress: string, userAddress: string) =>
   tokenAddress === ZeroAddress

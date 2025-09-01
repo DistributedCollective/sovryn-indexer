@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
-import { NetworkFeature } from 'loader/networks/types';
-import { networkAwareMiddleware } from 'middleware/network-middleware';
+import { NetworkFeature } from '~/loader/networks/types';
+import { networkAwareMiddleware } from '~/middleware/network-middleware';
 
 import ammRouter from './amm';
 import cmcRouter from './cmc';

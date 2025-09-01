@@ -1,11 +1,11 @@
 import { CronJob } from 'cron';
 import _ from 'lodash';
 
-import { PoolExtended, poolsRepository } from 'database/repository/pools-repository';
-import { PoolType } from 'database/schema';
-import { networks } from 'loader/networks';
-import { NetworkFeature } from 'loader/networks/types';
-import { logger } from 'utils/logger';
+import { PoolExtended, poolsRepository } from '~/database/repository/pools-repository';
+import { PoolType } from '~/database/schema';
+import { networks } from '~/loader/networks';
+import { NetworkFeature } from '~/loader/networks/types';
+import { logger } from '~/utils/logger';
 
 import { retrieveAmbientPoolList, updateAmbientPool } from './ambient-pool-tasks';
 import { retrieveBancorPoolList, updateBancorPool } from './bancor-pool-tasks';
