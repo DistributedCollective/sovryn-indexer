@@ -1,5 +1,10 @@
 import { CronJob } from 'cron';
 
+import { ingestQueue } from './jobs/queues';
+import { spawnWorkers } from './jobs/worker-spawner';
+import { sources } from './sources';
+import { logger } from './utils/logger';
+
 import { updateDexPoolList, updateDexPoolListData } from '~/cronjobs/dex/pools';
 import { swapTasks } from '~/cronjobs/dex/swaps/swaps-tasks';
 import { tokenFetcherTask } from '~/cronjobs/dex/token-fetcher-task';
@@ -20,9 +25,13 @@ export const tickWrapper = (fn: (context: CronJob) => Promise<void>) => {
 
 export const startCrontab = async () => {
   // populate chain config on startup before running other tasks
-  await updateChains();
+  // await updateChains();
 
-  runOnInit();
+  // runOnInit();
+
+  poolerJobs();
+
+  return;
 
   dexJobs();
 
@@ -135,14 +144,16 @@ function tempJobs() {
   // }).start();
 }
 
-export async function startPoller() {
-  logger.info('start pooler');
-  for (const s of sources) {
-    logger.info(`Adding poll job for source: ${s.key}`);
-    await ingestQueue.add(
-      'poll',
-      { source: s.key },
-      { removeOnComplete: 1000, deduplication: { id: `source:${s.key}` } },
-    );
-  }
+function poolerJobs() {
+  CronJob.from({
+    cronTime: '*/10 * * * * *',
+    onTick: tickWrapper(async () => {
+      // todo: check supported chains and filter them out
+      await Promise.allSettled(sources.map((s) => ingestQueue.add('poll', { source: s.key, chainId: s.chains[0] })));
+      logger.info('Ingestion tasks added to the queue');
+    }),
+    runOnInit: true,
+  }).start();
+
+  spawnWorkers();
 }

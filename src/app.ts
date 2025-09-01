@@ -10,6 +10,7 @@ import createRateLimiterMiddleware from '~/middleware/rateLimiter';
 import routes from '~/routes';
 import { logger } from '~/utils/logger';
 import { onShutdown } from '~/utils/shutdown';
+import { serverAdapter } from './jobs/board';
 
 const rateLimiterMiddleware = createRateLimiterMiddleware({
   keyPrefix: 'rate-limiter',
@@ -20,6 +21,11 @@ const rateLimiterMiddleware = createRateLimiterMiddleware({
 const app = express();
 // app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
 app.set('trust proxy', 2);
+
+// todo: enable optionally
+if (config.env === 'development') {
+  app.use('/admin/queues', serverAdapter.getRouter());
+}
 
 app.use((req, res, next) => {
   res.setHeader('Connection', 'close');

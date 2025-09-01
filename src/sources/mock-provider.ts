@@ -1,4 +1,6 @@
+import { logger } from '~/utils/logger';
 import type { SourceAdapter, SyncBatch } from '../domain/types';
+import { IngestionSourceKey } from '~/database/schema';
 
 let page = 0;
 const pageSize = 250;
@@ -15,10 +17,14 @@ export type MockItem = {
 };
 
 export const mockProvider: SourceAdapter<MockItem> = {
-  key: 'mock',
+  key: IngestionSourceKey.mock,
+  chains: [30, 31],
   initialCursor: '0',
-  async fetchNext(cursor) {
+  async fetchNext(chain, cursor) {
     const p = cursor ? parseInt(cursor, 10) : page;
+
+    logger.info({ cursor, p }, 'MockProvider fetching next page');
+
     if (p > 20) return { items: [], nextCursor: null };
 
     const items = Array.from({ length: pageSize }).map((_, i) => {
