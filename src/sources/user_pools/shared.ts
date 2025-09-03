@@ -8,7 +8,6 @@ import {
   NewToken,
   poolLiquidityChangesTable,
   poolPositionsTable,
-  poolsTable,
   PoolType,
   tokens,
 } from '~/database/schema';
@@ -37,19 +36,21 @@ export type LiquidityChange = {
   time: Date;
 };
 
+const log = logger.child({ module: 'pool_liquidity_changes', helper: 'ingestLiquidityChanges' });
+
 export async function ingestLiquidityChanges(items: LiquidityChange[], ctx: Context): Promise<IngestResult> {
   if (items.length === 0) {
-    logger.info('No ambient liquidity changes to ingest');
+    log.info({ ctx }, 'no liquidity changes to ingest');
     return { lastTimestamp: null };
   }
 
   const tokenAddresses = uniqBy(items, 'token');
   const positions = uniqBy(items, 'positionIdentifier');
 
-  await db
+  const result = await db
     .transaction(async (tx) => {
       // fill with new possibly new data
-      await tx
+      const newTokens = await tx
         .insert(tokens)
         .values(
           tokenAddresses.map(
@@ -62,9 +63,11 @@ export async function ingestLiquidityChanges(items: LiquidityChange[], ctx: Cont
               } satisfies NewToken),
           ),
         )
-        .onConflictDoNothing();
+        .onConflictDoNothing()
+        .returning({ id: tokens.identifier })
+        .execute();
 
-      await tx
+      const newPositions = await tx
         .insert(poolPositionsTable)
         .values(
           positions.map(
@@ -77,10 +80,12 @@ export async function ingestLiquidityChanges(items: LiquidityChange[], ctx: Cont
               } satisfies NewPoolPosition),
           ),
         )
-        .onConflictDoNothing();
+        .onConflictDoNothing()
+        .returning({ id: poolPositionsTable.identifier })
+        .execute();
 
       // insert liquidity changes
-      await tx
+      const newChanges = await tx
         .insert(poolLiquidityChangesTable)
         .values(
           items.map(
@@ -101,13 +106,34 @@ export async function ingestLiquidityChanges(items: LiquidityChange[], ctx: Cont
               } satisfies NewPoolLiquidityChange),
           ),
         )
-        .onConflictDoNothing();
+        .onConflictDoNothing()
+        .returning({ id: poolLiquidityChangesTable.identifier })
+        .execute();
+
+      return {
+        newTokens,
+        newPositions,
+        newChanges,
+      };
     })
     .catch((e) => {
-      logger.error({ err: e, positions }, 'Error ingesting liquidity changes batch!!!!');
+      log.error({ err: e, ctx, items: items.length }, 'error: ingestLiquidityChanges db transaction');
       throw e;
     });
 
   const lastTimestamp = last(orderBy(items, 'time', 'desc'))?.time ?? null;
+
+  log.info(
+    {
+      lastTimestamp,
+      ctx,
+      items: items.length,
+      newTokens: result.newTokens.length,
+      newPositions: result.newPositions.length,
+      newChanges: result.newChanges.length,
+    },
+    'ingested liquidity changes',
+  );
+
   return { lastTimestamp };
 }

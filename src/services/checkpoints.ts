@@ -33,7 +33,6 @@ const markBackfillProgress = async (key: string, cursor: string | null, lastTime
     // If cursor is null OR we've reached near-now (live edge), flip to live mode.
     const now = new Date();
     const nearNow = lastTimestamp ? (now.getTime() - lastTimestamp.getTime()) / 1000 <= 3000 : false;
-    logger.info({ nearNow, now, lastTimestamp, cursor: cursor === null }, 'backfill progress');
     if (cursor === null || nearNow) {
       await db
         .update(ingestionSourcesTable)

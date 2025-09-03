@@ -84,9 +84,6 @@ export const ambientUserPoolProvider: SourceAdapter<LiquidityChange> = {
   },
   async fetchIncremental(watermark, cursor, { chain }) {
     const start = cursor ? parseInt(cursor, 10) : 0;
-
-    logger.info({ watermark, cursor, start }, 'Fetching ambient liquidity changes');
-
     const result = await chain.sdex
       .queryFromSubgraph<Query>(
         gql`
