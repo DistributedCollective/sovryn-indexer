@@ -3,6 +3,8 @@ import { and, eq, gte, sql, sum } from 'drizzle-orm';
 import _ from 'lodash';
 import { bignumber } from 'mathjs';
 
+import { getPoolStats, markTokensAsSwapable } from './utils';
+
 import { MAX_DECIMAL_PLACES } from '~/config/constants';
 import { db } from '~/database/client';
 import { PoolExtended, poolsRepository } from '~/database/repository/pools-repository';
@@ -11,11 +13,10 @@ import { NewPool, Pool, poolsTable, PoolType, swapsTableV2 } from '~/database/sc
 import { networks } from '~/loader/networks';
 import { SdexChain } from '~/loader/networks/sdex-chain';
 import { areAddressesEqual } from '~/utils/compare';
+import { encode } from '~/utils/encode';
 import { logger } from '~/utils/logger';
 import { prettyNumber } from '~/utils/numbers';
 import { toDisplayPrice } from '~/utils/price';
-
-import { getPoolStats, markTokensAsSwapable } from './utils';
 
 // todo: think about pagination...
 const POOL_LIMIT = 250;
@@ -37,13 +38,17 @@ export const retrieveAmbientPoolList = async (chain: SdexChain) => {
         ({
           chainId: chain.context.chainId,
           type: PoolType.ambient,
-          identifier: `${pool.base}_${pool.quote}_${pool.poolIdx}`,
+          legacyIdentifier: `${pool.base}_${pool.quote}_${pool.poolIdx}`,
+          identifier: encode.identity([chain.context.chainId, PoolType.ambient, pool.base, pool.quote, pool.poolIdx]),
           baseId: tokens.find((token) => areAddressesEqual(token.address, pool.base))?.id,
           quoteId: tokens.find((token) => areAddressesEqual(token.address, pool.quote))?.id,
+          baseIdentifier: encode.identity([chain.context.chainId, pool.base.toLowerCase()]),
+          quoteIdentifier: encode.identity([chain.context.chainId, pool.quote.toLowerCase()]),
           extra: {
             poolIdx: pool.poolIdx,
             // lpToken: pool.lpToken, // todo
           },
+          processed: true,
         } satisfies NewPool),
     )
     .filter((pool) => pool.baseId && pool.quoteId);
@@ -63,7 +68,7 @@ export const retrieveAmbientPoolList = async (chain: SdexChain) => {
 };
 
 const updateAmbientLpToken = (chain: SdexChain) => async (pool: Pool) => {
-  const [base, quote, poolIdx] = pool.identifier.split('_');
+  const [base, quote, poolIdx] = pool.legacyIdentifier.split('_');
   const lpToken = await chain.query.queryPoolLpTokenAddress(base, quote, poolIdx);
   if (lpToken) {
     await db

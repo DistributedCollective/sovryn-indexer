@@ -119,7 +119,7 @@ export class HttpClient {
       const isAbsoluteUrl = isValidAbsoluteUrl(url);
       const input = isAbsoluteUrl ? url : `${this.config.baseUrl}${url}`;
 
-      this.logger.info({ url, options }, 'Fetching');
+      this.logger.debug({ url, options }, 'Fetching');
 
       const response = await fetch(input, {
         ...options,

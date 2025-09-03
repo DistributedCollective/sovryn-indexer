@@ -4,6 +4,8 @@ import gql from 'graphql-tag';
 import _ from 'lodash';
 import { bignumber } from 'mathjs';
 
+import { markTokensAsSwapable } from './utils';
+
 import { MAX_DECIMAL_PLACES } from '~/config/constants';
 import { db } from '~/database/client';
 import { PoolExtended, poolsRepository } from '~/database/repository/pools-repository';
@@ -12,10 +14,9 @@ import { NewPool, poolsTable, PoolType } from '~/database/schema';
 import { networks } from '~/loader/networks';
 import { LegacyChain } from '~/loader/networks/legacy-chain';
 import { areAddressesEqual } from '~/utils/compare';
+import { encode } from '~/utils/encode';
 import { logger } from '~/utils/logger';
 import { prettyNumber } from '~/utils/numbers';
-
-import { markTokensAsSwapable } from './utils';
 
 const childLogger = logger.child({ module: 'crontab:dex:pools:bancor' });
 
@@ -34,9 +35,18 @@ export const retrieveBancorPoolList = async (chain: LegacyChain) => {
         ({
           chainId: chain.context.chainId,
           type: PoolType.bancor,
-          identifier: pool.id,
+          legacyIdentifier: pool.id,
+          identifier: encode.identity([
+            chain.context.chainId,
+            PoolType.bancor,
+            pool.token0.id.toLowerCase(),
+            pool.token1.id.toLowerCase(),
+            pool.type,
+          ]),
           baseId: tokens.find((token) => areAddressesEqual(token.address, pool.token0.id))?.id,
           quoteId: tokens.find((token) => areAddressesEqual(token.address, pool.token1.id))?.id,
+          baseIdentifier: encode.identity([chain.context.chainId, pool.token0.id.toLowerCase()]),
+          quoteIdentifier: encode.identity([chain.context.chainId, pool.token1.id.toLowerCase()]),
           fee: bignumber(pool.conversionFee).lte(0)
             ? '0'
             : prettyNumber(bignumber(pool.conversionFee).div(pool.maxConversionFee).mul(100)),

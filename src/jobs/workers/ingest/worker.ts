@@ -1,47 +1,94 @@
 import '~/config';
-import { Job, Queue } from 'bullmq';
-// import { getOrCreateCheckpoint } from 'services/checkpoints';
-import { sources } from '~/sources';
-import { logger } from '~/utils/logger';
+import { Job } from 'bullmq';
+
+import { getAdapter } from './helpers';
 import { IngestWorkerType } from './types';
-import { INGEST_QUEUE_NAME, redisConnection } from '~/jobs/worker-config';
+
+import { IngestionSource, IngestionSourceMode } from '~/database/schema';
+import { Context } from '~/domain/types';
+import { ingestQueue } from '~/jobs/queues';
+import { networks } from '~/loader/networks';
 import { checkpoints } from '~/services/checkpoints';
+import { encode } from '~/utils/encode';
+import { logger } from '~/utils/logger';
 
-function getAdapter(key: string) {
-  const a = sources.find((s) => s.key === key);
-  if (!a) throw new Error(`Unknown source ${key}`);
-  return a;
-}
+const log = logger.child({ worker: 'ingest.worker' });
 
-const queue = new Queue<IngestWorkerType>(INGEST_QUEUE_NAME, { connection: redisConnection });
+Error.stackTraceLimit = Infinity;
 
 export default async function (job: Job<IngestWorkerType>) {
-  logger.info(`Processing job ${job.id} for source ${job.data.source} with cursor ${job.data.cursor} / ${job.name}`);
-  const adapter = getAdapter(job.data.source);
-  logger.info(`Using adapter ${adapter.key}`);
-  const cp = await checkpoints.getOrCreate(job.data.chainId, adapter.key);
-  logger.info({ checkpoint: true, cp }, `Using checkpoint for adapter ${adapter.key}`);
-  const cursor = job.data.cursor ?? cp.cursor ?? adapter.initialCursor ?? null;
-  logger.info(`Using cursor ${cursor} for adapter ${adapter.key}`);
+  try {
+    const key = encode.identity([job.data.source, job.data.chainId.toString()]);
 
-  const { items, nextCursor } = await adapter.fetchNext(job.data.chainId, cursor);
+    const adapter = getAdapter(job.data.source);
+    const cp = await checkpoints.getOrCreate(key, [job.data.source, job.data.chainId.toString()]);
 
-  for (const it of items) {
-    // todo: process adapter data
-    // await upsertRaw(it);
-    // const userId = await toUserId(it.userExternalId);
-    // await upsertLedger(it, userId);
-    // await summarizeQueue.add('sum', { userId, currency: it.currency }, { removeOnComplete: 1000, removeOnFail: 1000 });
+    const chain = networks.getByChainId(job.data.chainId);
+    const ctx = { chain };
+
+    // backfilling
+    if (cp.mode === IngestionSourceMode.backfill) {
+      job.log('backfill mode');
+      await handleBackfill(job, adapter, cp, ctx);
+      return 'OK:1';
+    }
+
+    job.log('live mode');
+
+    // LIVE mode, with 24h safety buffer
+    const watermark = new Date(cp.liveSince ?? cp.lastSyncedAt ?? new Date(0)).getTime() - 86400_000;
+
+    job.log('watermark: ' + watermark);
+
+    if (adapter.fetchIncremental) {
+      job.log('fetching incremental data');
+      const { items, nextCursor } = await adapter.fetchIncremental(watermark.toString(), cp.liveCursor, ctx);
+      await adapter.ingest(items, ctx);
+      await adapter.onLiveIngested?.(items, ctx);
+
+      await checkpoints.markIncrementalProgress(key, nextCursor);
+      if (nextCursor) {
+        job.log('scheduling next page');
+        await ingestQueue.add('page', { source: adapter.name, chainId: job.data.chainId });
+      }
+
+      job.log('fetching incremental data done');
+      return 'OK:2';
+    } else {
+      job.log('fallback to backfill');
+      // Fallback: call backfill until safety lag window, then remain in live mode and rely on watermark + overlap on each poll.
+      await handleBackfill(job, adapter, cp, ctx, true);
+      return 'OK:3';
+    }
+  } catch (err) {
+    log.error({ err, job }, 'Error processing ingest job');
+    throw err;
+  }
+}
+
+async function handleBackfill(
+  job: Job<IngestWorkerType>,
+  adapter: ReturnType<typeof getAdapter>,
+  cp: IngestionSource,
+  ctx: Context<unknown>,
+  isLiveFallback: boolean = false,
+) {
+  const { items, nextCursor, atLiveEdge } = await adapter.fetchBackfill(cp.backfillCursor ?? null, ctx);
+
+  const { lastTimestamp } = await adapter.ingest(items, ctx);
+
+  if (!isLiveFallback) {
+    await adapter.onBackfillIngested?.(items, ctx);
+    await checkpoints.markBackfillProgress(cp.key, nextCursor, lastTimestamp);
+  } else {
+    await adapter.onLiveIngested?.(items, ctx);
+    await checkpoints.markIncrementalProgress(cp.key, nextCursor);
   }
 
-  logger.info(`Ingested ${items.length} items from ${adapter.key}, ${nextCursor}`);
-
-  await checkpoints.saveCursor(job.data.chainId, adapter.key, nextCursor ?? null, new Date());
-
-  if (nextCursor) {
-    logger.info(`Enqueuing next page for ${adapter.key} with cursor ${nextCursor}`);
-    await job.updateProgress({ nextCursor });
-    // enqueue next page immediately
-    await queue.add('page', { source: adapter.key, chainId: job.data.chainId, cursor: nextCursor });
+  if (nextCursor || atLiveEdge) {
+    job.log('scheduling next page');
+    await ingestQueue.add('page', { source: job.data.source, chainId: job.data.chainId });
   }
+
+  job.log('backfill page done');
 }

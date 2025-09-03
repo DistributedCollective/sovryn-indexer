@@ -3,7 +3,7 @@ import { and, asc, desc, eq, isNull, lt, or, sql } from 'drizzle-orm';
 
 import { db } from '~/database/client';
 import { lower } from '~/database/helpers';
-import { Token, tokens, usdDailyPricesTable } from '~/database/schema';
+import { Token, usdDailyPricesTable } from '~/database/schema';
 import { NewPool, Pool, poolsTable } from '~/database/schema/pools';
 
 const TEN_MINUTES = 10 * 60 * 1000;
@@ -16,21 +16,30 @@ export const poolsRepository = {
     // verify if data is correct
     data.forEach((pool) => {
       // identifier must not have character "/", so we can use it in the url path.
-      pool.identifier = pool.identifier.toLowerCase().replace('/', '_');
+      pool.legacyIdentifier = pool.legacyIdentifier.toLowerCase().replace('/', '_');
     });
 
-    return db
-      .insert(poolsTable)
-      .values(data)
-      .onConflictDoNothing({
-        target: [poolsTable.chainId, poolsTable.type, poolsTable.identifier],
-      })
-      .returning();
+    return (
+      db
+        .insert(poolsTable)
+        .values(data)
+        // todo: change back to DoNothing once migration completes
+        .onConflictDoUpdate({
+          target: [poolsTable.chainId, poolsTable.type, poolsTable.legacyIdentifier],
+          set: {
+            identifier: sql`EXCLUDED.new_identifier`,
+            baseIdentifier: sql`EXCLUDED.base_identifier`,
+            quoteIdentifier: sql`EXCLUDED.quote_identifier`,
+          },
+        })
+        .returning()
+    );
   },
   listForChain: (chainId: number) =>
     db.query.poolsTable.findMany({
       columns: {
         id: true,
+        legacyIdentifier: true,
         identifier: true,
         type: true,
         price: true,
@@ -69,7 +78,7 @@ export const poolsRepository = {
     }),
   getByIdentifier: (chainId: number, identifier: string) =>
     db.query.poolsTable.findFirst({
-      where: and(eq(poolsTable.chainId, chainId), eq(lower(poolsTable.identifier), identifier.toLowerCase())),
+      where: and(eq(poolsTable.chainId, chainId), eq(lower(poolsTable.legacyIdentifier), identifier.toLowerCase())),
     }),
   allProcessable: async (): Promise<PoolExtended[]> =>
     db.query.poolsTable.findMany({
@@ -85,6 +94,7 @@ export const poolsRepository = {
   listForChainAsTickers: (chainId: number) =>
     db.query.poolsTable.findMany({
       columns: {
+        legacyIdentifier: true,
         identifier: true,
         price: true,
         baseLiquidity: true,

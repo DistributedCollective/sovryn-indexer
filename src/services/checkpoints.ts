@@ -1,41 +1,78 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
+
 import { db } from '~/database/client';
-import { IngestionSource, IngestionSourceKey, ingestionSourcesTable } from '~/database/schema';
+import { IngestionSource, IngestionSourceMode, ingestionSourcesTable } from '~/database/schema';
 import { logger } from '~/utils/logger';
 
-const getOrCreate = async (chainId: number, sourceKey: IngestionSourceKey) => {
-  const sq = db.insert(ingestionSourcesTable).values({ key: sourceKey, chainId }).onConflictDoNothing().getSQL();
+const preparedInsert = db
+  .insert(ingestionSourcesTable)
+  .values({ key: sql.placeholder('key'), tags: sql.placeholder('tags'), mode: IngestionSourceMode.backfill })
+  .onConflictDoNothing()
+  .returning()
+  .prepare('insert_ingestion_source');
 
-  const sl = db
-    .select()
-    .from(ingestionSourcesTable)
-    .where(and(eq(ingestionSourcesTable.chainId, chainId), eq(ingestionSourcesTable.key, sourceKey)))
-    .limit(1)
-    .getSQL();
+const preparedSelect = db.query.ingestionSourcesTable
+  .findFirst({
+    where: eq(ingestionSourcesTable.key, sql.placeholder('key')),
+  })
+  .prepare('select_ingestion_source');
 
-  const result = await db.execute<IngestionSource>(sql`
-    WITH ins AS (${sq})
-    SELECT * FROM ins
-    UNION ALL
-    ${sl};
-`);
+const log = logger.child({ service: 'checkpoints' });
 
-  logger.info({ checkpoint: true, result }, `getOrCreate`);
+const getOrCreate = async (sourceKey: string, tags: string[]) => {
+  const insert = await preparedInsert.execute({ key: sourceKey, tags: JSON.stringify(tags) });
+  if (insert.length) {
+    return insert[0] as IngestionSource;
+  }
 
-  // For node-postgres driver: result.rows
-  // For postgres-js driver: result (already rows)
-  const row = ('rows' in result ? result.rows : result)[0];
-  if (!row) throw new Error('Unexpected: no row returned');
-  return row;
+  return preparedSelect.execute({ key: sourceKey });
 };
 
-const saveCursor = (chainId: number, sourceKey: IngestionSourceKey, cursor: string | null, lastSyncedAt?: Date) =>
-  db
-    .update(ingestionSourcesTable)
-    .set({ cursor: cursor ?? null, lastSyncedAt: lastSyncedAt ?? new Date(), isBackfilling: cursor !== null })
-    .where(and(eq(ingestionSourcesTable.chainId, chainId), eq(ingestionSourcesTable.key, sourceKey)));
+const markBackfillProgress = async (key: string, cursor: string | null, lastTimestamp?: Date) => {
+  try {
+    // If cursor is null OR we've reached near-now (live edge), flip to live mode.
+    const now = new Date();
+    const nearNow = lastTimestamp ? (now.getTime() - lastTimestamp.getTime()) / 1000 <= 3000 : false;
+    logger.info({ nearNow, now, lastTimestamp, cursor: cursor === null }, 'backfill progress');
+    if (cursor === null || nearNow) {
+      await db
+        .update(ingestionSourcesTable)
+        .set({
+          mode: IngestionSourceMode.live,
+          backfillCursor: null,
+          liveSince: lastTimestamp === null ? now : lastTimestamp,
+          lastSyncedAt: now,
+        })
+        .where(eq(ingestionSourcesTable.key, key))
+        .execute();
+    } else {
+      await db
+        .update(ingestionSourcesTable)
+        .set({ backfillCursor: cursor, lastSyncedAt: now })
+        .where(eq(ingestionSourcesTable.key, key))
+        .execute();
+    }
+  } catch (e) {
+    log.error({ err: e, key, cursor, lastTimestamp }, 'error: markBackfillProgress');
+    throw e;
+  }
+};
+
+const markIncrementalProgress = async (key: string, cursor?: string | null) => {
+  try {
+    const now = new Date();
+    await db
+      .update(ingestionSourcesTable)
+      .set({ liveCursor: cursor ?? null, lastSyncedAt: now })
+      .where(eq(ingestionSourcesTable.key, key))
+      .execute();
+  } catch (err) {
+    log.error({ err, key, cursor }, 'error: markIncrementalProgress');
+  }
+};
 
 export const checkpoints = {
   getOrCreate,
-  saveCursor,
+  markBackfillProgress,
+  markIncrementalProgress,
 };

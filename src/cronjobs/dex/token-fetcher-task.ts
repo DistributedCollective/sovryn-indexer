@@ -6,6 +6,7 @@ import { GIT_TOKEN_LIST_URL } from '~/config/constants';
 import { db } from '~/database/client';
 import { NewToken, Token, tokens } from '~/database/schema/tokens';
 import { networks } from '~/loader/networks';
+import { encode } from '~/utils/encode';
 import { logger } from '~/utils/logger';
 
 type TokenData = {
@@ -75,12 +76,14 @@ export async function tokenFetcherTask(ctx: CronJob) {
         const dbToken = dbTokenMap.get(address);
 
         const tokenData: NewToken = {
+          identifier: encode.identity([chainId, token.address]),
           chainId,
           address,
           symbol: token.symbol,
           name: token.name,
           decimals: token.decimals,
           logoUrl: token.logoURI,
+          processed: true,
         };
 
         if (!dbToken) {
@@ -93,7 +96,9 @@ export async function tokenFetcherTask(ctx: CronJob) {
             dbToken.symbol !== token.symbol ||
             dbToken.name !== token.name ||
             dbToken.decimals !== token.decimals ||
-            dbToken.logoUrl !== token.logoURI
+            dbToken.logoUrl !== token.logoURI ||
+            dbToken.processed === false ||
+            !dbToken.identifier
           ) {
             tokensToUpsert.push({ ...tokenData, ignored: false });
           }
@@ -115,6 +120,7 @@ export async function tokenFetcherTask(ctx: CronJob) {
           .onConflictDoUpdate({
             target: [tokens.chainId, tokens.address],
             set: {
+              identifier: sql`EXCLUDED.identifier`,
               symbol: sql`EXCLUDED.symbol`,
               name: sql`EXCLUDED.name`,
               decimals: sql`EXCLUDED.decimals`,

@@ -4,13 +4,14 @@ import express from 'express';
 import helmet from 'helmet';
 import pino from 'pino-http';
 
+import { serverAdapter } from './jobs/board';
+
 import config from '~/config';
 import { errorHandler } from '~/middleware/error-handler';
 import createRateLimiterMiddleware from '~/middleware/rateLimiter';
 import routes from '~/routes';
 import { logger } from '~/utils/logger';
 import { onShutdown } from '~/utils/shutdown';
-import { serverAdapter } from './jobs/board';
 
 const rateLimiterMiddleware = createRateLimiterMiddleware({
   keyPrefix: 'rate-limiter',
@@ -23,9 +24,9 @@ const app = express();
 app.set('trust proxy', 2);
 
 // todo: enable optionally
-if (config.env === 'development') {
-  app.use('/admin/queues', serverAdapter.getRouter());
-}
+// if (config.env === 'development') {
+app.use('/admin/queues', serverAdapter.getRouter());
+// }
 
 app.use((req, res, next) => {
   res.setHeader('Connection', 'close');

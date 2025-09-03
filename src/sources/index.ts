@@ -1,3 +1,3 @@
-import { mockProvider } from './mock-provider';
+import { ambientUserPoolProvider } from './user_pools/ambient-liquidity-changes';
 
-export const sources = [mockProvider] as const;
+export const sources = [ambientUserPoolProvider] as const;

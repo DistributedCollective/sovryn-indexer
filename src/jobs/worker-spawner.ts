@@ -19,10 +19,6 @@ const ingestWorker = new Worker(INGEST_QUEUE_NAME, path.resolve(__dirname, `work
   },
 });
 
-ingestWorker.on('completed', (job) => {
-  logger.info(`Job ${job.id} completed for source ${job.data.source}`);
-});
-
 ingestWorker.on('failed', (job, err) => {
   logger.error(`Job ${job.id} failed for source ${job.data.source}: ${err.message}`);
 });
