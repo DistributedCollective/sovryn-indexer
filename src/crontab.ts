@@ -31,9 +31,9 @@ export const startCrontab = async () => {
 
   poolerJobs();
 
-  return;
+  // dexJobs();
 
-  dexJobs();
+  return;
 
   // LEGACY JOBS
   ammApyJobs();
@@ -116,11 +116,11 @@ function dexJobs() {
     onTick: tickWrapper(updateDexPoolListData),
   }).start();
 
-  // Stores Swaps V2 every minute
-  CronJob.from({
-    cronTime: '*/1 * * * *',
-    onTick: tickWrapper(swapTasks),
-  }).start();
+  // // Stores Swaps V2 every minute
+  // CronJob.from({
+  //   cronTime: '*/1 * * * *',
+  //   onTick: tickWrapper(swapTasks),
+  // }).start();
 }
 
 function tempJobs() {

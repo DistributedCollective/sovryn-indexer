@@ -23,5 +23,5 @@ Simply use the `encode.identity` (./src/utils/encode.ts) function with the appro
 
 #### Bancor pools
 
-- Use chain ID, PoolType.bancor, lowercase token addresses (base + quote) and bancor pool type (version 1 or 2) to generate the identifier.
-- `encode.identity([chain.context.chainId, PoolType.bancor, pool.token0.id.toLowerCase(), pool.token1.id.toLowerCase(), pool.type])`
+- Use chain ID, PoolType.bancor, lowercase pool contract (converter) address to generate the identifier.
+- `encode.identity([chain.context.chainId, PoolType.bancor, pool.id.toLowerCase()])`

@@ -5,7 +5,7 @@ import { getAdapter } from './helpers';
 import { IngestWorkerType } from './types';
 
 import { IngestionSource, IngestionSourceMode } from '~/database/schema';
-import { Context } from '~/domain/types';
+import { Context, HighWaterMark } from '~/domain/types';
 import { ingestQueue } from '~/jobs/queues';
 import { networks } from '~/loader/networks';
 import { checkpoints } from '~/services/checkpoints';
@@ -21,10 +21,21 @@ export default async function (job: Job<IngestWorkerType>) {
     const key = encode.identity([job.data.source, job.data.chainId.toString()]);
 
     const adapter = getAdapter(job.data.source);
-    const cp = await checkpoints.getOrCreate(key, [job.data.source, job.data.chainId.toString()]);
+    const cp = await checkpoints.getOrCreate(
+      key,
+      [job.data.source, job.data.chainId.toString()],
+      adapter.highWaterMark,
+    );
 
     const chain = networks.getByChainId(job.data.chainId);
-    const ctx = { chain };
+    const ctx: Context = { chain, checkpoint: cp };
+
+    if (adapter.enabled) {
+      if (!(await adapter.enabled(ctx))) {
+        job.log('adapter disabled');
+        return 'OK:0';
+      }
+    }
 
     // backfilling
     if (cp.mode === IngestionSourceMode.backfill) {
@@ -36,20 +47,29 @@ export default async function (job: Job<IngestWorkerType>) {
     job.log('live mode');
 
     // LIVE mode, with 24h safety buffer
-    const watermark = new Date(cp.liveSince ?? cp.lastSyncedAt ?? new Date(0)).getTime() - 86400_000;
+    const watermark =
+      cp.highWaterMark === HighWaterMark.date
+        ? new Date(Number(cp.liveWatermark) ?? cp.lastSyncedAt ?? new Date()).getTime() -
+          (adapter.highWaterOverlapWindow ?? 172800) * 1000
+        : Number(cp.liveWatermark) - (adapter.highWaterOverlapWindow ?? 1000);
 
     job.log('watermark: ' + watermark);
 
     if (adapter.fetchIncremental) {
       job.log('fetching incremental data');
       const { items, nextCursor } = await adapter.fetchIncremental(watermark.toString(), cp.liveCursor, ctx);
-      await adapter.ingest(items, ctx);
+      const { highWater } = await adapter.ingest(items, ctx);
       await adapter.onLiveIngested?.(items, ctx);
 
-      await checkpoints.markIncrementalProgress(key, nextCursor);
+      await checkpoints.markIncrementalProgress(key, nextCursor, highWater);
       if (nextCursor) {
         job.log('scheduling next page');
-        await ingestQueue.add('page', { source: adapter.name, chainId: job.data.chainId });
+        await ingestQueue.removeDeduplicationKey(`ingest:${adapter.name}:${job.data.chainId}`);
+        await ingestQueue.add(
+          'page',
+          { source: adapter.name, chainId: job.data.chainId },
+          { deduplication: { id: `ingest:${adapter.name}:${job.data.chainId}` } },
+        );
       }
 
       job.log('fetching incremental data done');
@@ -75,19 +95,24 @@ async function handleBackfill(
 ) {
   const { items, nextCursor, atLiveEdge } = await adapter.fetchBackfill(cp.backfillCursor ?? null, ctx);
 
-  const { lastTimestamp } = await adapter.ingest(items, ctx);
+  const { highWater } = await adapter.ingest(items, ctx);
 
   if (!isLiveFallback) {
     await adapter.onBackfillIngested?.(items, ctx);
-    await checkpoints.markBackfillProgress(cp.key, nextCursor, lastTimestamp);
+    await checkpoints.markBackfillProgress(cp, nextCursor, highWater);
   } else {
     await adapter.onLiveIngested?.(items, ctx);
-    await checkpoints.markIncrementalProgress(cp.key, nextCursor);
+    await checkpoints.markIncrementalProgress(cp.key, nextCursor, highWater);
   }
 
   if (nextCursor || atLiveEdge) {
     job.log('scheduling next page');
-    await ingestQueue.add('page', { source: job.data.source, chainId: job.data.chainId });
+    await ingestQueue.removeDeduplicationKey(`ingest:${adapter.name}:${job.data.chainId}`);
+    await ingestQueue.add(
+      'page',
+      { source: job.data.source, chainId: job.data.chainId },
+      { deduplication: { id: `ingest:${adapter.name}:${job.data.chainId}` } },
+    );
   }
 
   job.log('backfill page done');

@@ -1,5 +1,4 @@
-import { and, eq } from 'drizzle-orm';
-import { uniqBy, orderBy, last } from 'lodash';
+import { uniqBy, orderBy, first } from 'lodash';
 
 import { db } from '~/database/client';
 import {
@@ -41,7 +40,7 @@ const log = logger.child({ module: 'pool_liquidity_changes', helper: 'ingestLiqu
 export async function ingestLiquidityChanges(items: LiquidityChange[], ctx: Context): Promise<IngestResult> {
   if (items.length === 0) {
     log.info({ ctx }, 'no liquidity changes to ingest');
-    return { lastTimestamp: null };
+    return { highWater: null };
   }
 
   const tokenAddresses = uniqBy(items, 'token');
@@ -121,7 +120,7 @@ export async function ingestLiquidityChanges(items: LiquidityChange[], ctx: Cont
       throw e;
     });
 
-  const lastTimestamp = last(orderBy(items, 'time', 'desc'))?.time ?? null;
+  const lastTimestamp = first(orderBy(items, 'time', 'desc'))?.time ?? null;
 
   log.info(
     {
@@ -135,5 +134,5 @@ export async function ingestLiquidityChanges(items: LiquidityChange[], ctx: Cont
     'ingested liquidity changes',
   );
 
-  return { lastTimestamp };
+  return { highWater: lastTimestamp ? lastTimestamp.getTime().toString() : null };
 }

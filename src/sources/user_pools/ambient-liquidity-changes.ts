@@ -1,16 +1,15 @@
 import gql from 'graphql-tag';
 import { bignumber } from 'mathjs';
 
-import type { SourceAdapter } from '../../domain/types';
+import { HighWaterMark, type SourceAdapter } from '../../domain/types';
 
 import { ingestLiquidityChanges, LiquidityChange, LiquidityChangeType } from './shared';
 
 import { PoolType } from '~/database/schema';
 import { Chain } from '~/loader/networks/chain-config';
 import { encode } from '~/utils/encode';
-import { logger } from '~/utils/logger';
 
-const LIMIT = 1000;
+const LIMIT = 500;
 
 type Query = {
   liquidityChanges: {
@@ -42,6 +41,11 @@ export const ambientUserPoolProvider: SourceAdapter<LiquidityChange> = {
     // bob testnet
     808813,
   ],
+  highWaterMark: HighWaterMark.date,
+  highWaterOverlapWindow: 172800, // 48 hours
+
+  // todo: disable until tokens and pools for specific chain are synced
+  enabled: (ctx) => Promise.resolve(true),
 
   async fetchBackfill(cursor, { chain }) {
     const start = cursor ? parseInt(cursor, 10) : 0;
@@ -118,7 +122,7 @@ export const ambientUserPoolProvider: SourceAdapter<LiquidityChange> = {
         {
           start,
           limit: LIMIT,
-          watermark,
+          watermark: Math.floor(Number(watermark) / 1000),
         },
       )
       .then((res) => res.liquidityChanges);
@@ -148,6 +152,8 @@ function mapItem(item: Query['liquidityChanges'][0], chain: Chain): LiquidityCha
     ]),
     positionIdentifier: encode.identity([
       chain.chainId,
+      PoolType.ambient,
+      item.user.toLowerCase(),
       item.pool.base,
       item.pool.quote,
       item.pool.poolIdx,
@@ -155,7 +161,7 @@ function mapItem(item: Query['liquidityChanges'][0], chain: Chain): LiquidityCha
       item.askTick,
       item.bidTick,
     ]),
-    user: item.user,
+    user: item.user.toLowerCase(),
     time: new Date(Number(item.time) * 1000),
     extra: {
       sourceId: item.id,

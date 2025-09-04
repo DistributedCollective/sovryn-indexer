@@ -1,4 +1,6 @@
-import { pgTable, varchar, serial, timestamp, char, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, varchar, serial, timestamp, char, integer } from 'drizzle-orm/pg-core';
+
+import { HighWaterMark } from '~/domain/types';
 
 export enum IngestionSourceMode {
   backfill = 'backfill',
@@ -13,10 +15,15 @@ export const ingestionSourcesTable = pgTable('ingestion_sources', {
   tags: varchar('tags', { length: 1024 }).default('[]'),
   mode: varchar('mode', { length: 32 }).$type<IngestionSourceMode>().notNull().default(IngestionSourceMode.backfill),
 
+  highWaterMark: varchar('high_water_mark', { length: 32 })
+    .$type<HighWaterMark>()
+    .notNull()
+    .default(HighWaterMark.date),
+
   backfillCursor: varchar('backfill_cursor', { length: 1024 }),
 
   liveCursor: varchar('live_cursor', { length: 1024 }),
-  liveSince: timestamp('live_since'),
+  liveWatermark: varchar('live_watermark', { length: 256 }),
 
   lastSyncedAt: timestamp('last_synced_at'),
 });
