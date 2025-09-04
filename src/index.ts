@@ -11,6 +11,10 @@ startApp();
 if (!config.readOnly) {
   logger.info('Running in read-write mode. Starting crontab...');
   startCrontab();
+
+  if (config.spawnWorkers) {
+    import('./jobs/worker-spawner');
+  }
 } else {
   logger.info('Running in read-only mode.');
 }

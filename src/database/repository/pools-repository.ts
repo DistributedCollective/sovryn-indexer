@@ -28,6 +28,7 @@ export const poolsRepository = {
           target: [poolsTable.chainId, poolsTable.type, poolsTable.legacyIdentifier],
           set: {
             identifier: sql`EXCLUDED.new_identifier`,
+            legacyIdentifier: sql`EXCLUDED.identifier`,
             baseIdentifier: sql`EXCLUDED.base_identifier`,
             quoteIdentifier: sql`EXCLUDED.quote_identifier`,
           },

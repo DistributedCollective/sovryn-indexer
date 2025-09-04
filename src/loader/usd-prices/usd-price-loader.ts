@@ -107,10 +107,7 @@ async function processSdexTokens(chain: SdexChain, date: Date, tokens: Token[]):
     return [];
   }
 
-  // todo: put it to multicall?
   const poolPrices = await loadPoolPrices(poolsWithIndexes, chain, tokens);
-
-  logger.warn({ chainId: chain.context.chainId, pools: pools.length, prices: poolPrices.length }, 'Loaded pools');
 
   const toAdd: Price[] = [];
 

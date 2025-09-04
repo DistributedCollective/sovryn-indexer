@@ -14,7 +14,8 @@
     "LOG_LEVEL": "debug",
     "PORT": "3000",
     "POSTGRES_PORT": "5432",
-    "TZ": "UTC"
+    "TZ": "UTC",
+    "SPAWN_WORKERS": "true"
   },
   "DEV_ENV_VARS": {},
   "STAGING_ENV_VARS": {},

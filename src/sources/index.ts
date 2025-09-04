@@ -11,6 +11,6 @@ export const sources = [
   ambientPoolFetcherSource,
   bancorPoolFetcherSource,
   // fetch pool liquidity changes
-  // ambientPoolLiquiditySource,
-  // bancorPoolLiquiditySource,
+  ambientPoolLiquidityChangesSource,
+  bancorPoolLiquidityChangesSource,
 ] as const;

@@ -13,7 +13,6 @@ import { tvlTask } from '~/cronjobs/legacy/tvl-task';
 import { retrieveUsdPrices } from '~/cronjobs/retrieve-usd-prices';
 import { networks, updateChains } from '~/loader/networks';
 import { getLastPrices } from '~/loader/price';
-import config from './config';
 
 export const tickWrapper = (fn: (context: CronJob) => Promise<void>) => {
   return async function () {
@@ -25,14 +24,11 @@ export const startCrontab = async () => {
   // populate chain config on startup before running other tasks
 
   await updateChains();
-
-  // runOnInit();
-
   poolerJobs();
 
-  // dexJobs();
+  runOnInit();
 
-  return;
+  dexJobs();
 
   // LEGACY JOBS
   ammApyJobs();
@@ -51,19 +47,11 @@ export const startCrontab = async () => {
       this.start();
     },
   });
-
-  tempJobs();
 };
 
 function runOnInit() {
-  // // Update supported token list from the github repository on startup and every minute
-  // CronJob.from({
-  //   cronTime: '*/1 * * * *',
-  //   onTick: tickWrapper(tokenFetcherTask),
-  //   runOnInit: true,
-  // }).start();
-
   // Retrieve USD prices of tokens every minute
+  // todo: move retrieval to ingest worker
   CronJob.from({
     cronTime: '*/5 * * * *',
     onTick: tickWrapper(retrieveUsdPrices),
@@ -110,24 +98,16 @@ function dexJobs() {
     onTick: tickWrapper(updateDexPoolListData),
   }).start();
 
-  // // Stores Swaps V2 every minute
-  // CronJob.from({
-  //   cronTime: '*/1 * * * *',
-  //   onTick: tickWrapper(swapTasks),
-  // }).start();
-}
-
-function tempJobs() {
-  // CronJob.from({
-  //   cronTime: '*/5 * * * *',
-  //   onTick: tickWrapper(priceFeedTask),
-  //   runOnInit: true,
-  // }).start();
+  // Stores Swaps V2 every minute
+  CronJob.from({
+    cronTime: '*/1 * * * *',
+    onTick: tickWrapper(swapTasks),
+  }).start();
 }
 
 function poolerJobs() {
   CronJob.from({
-    cronTime: '*/1 * * * *',
+    cronTime: '*/10 * * * * *',
     onTick: tickWrapper(async () => {
       const chains = networks.listChains();
       const items = sources.flatMap((item) =>
@@ -136,7 +116,6 @@ function poolerJobs() {
           .map((chainId) => ({ source: item.name, chainId })),
       );
 
-      // todo: check supported chains and filter them out
       await Promise.allSettled(
         items.map((s) =>
           ingestQueue.add('poll', s, {
@@ -145,12 +124,5 @@ function poolerJobs() {
         ),
       );
     }),
-    runOnInit: true,
   }).start();
-
-  if (config.spawnWorkers) {
-    import('./jobs/worker-spawner').then(({ spawnWorkers }) => {
-      spawnWorkers();
-    });
-  }
 }
