@@ -33,7 +33,24 @@ export default async function (job: Job<IngestWorkerType>) {
     if (adapter.enabled) {
       if (!(await adapter.enabled(ctx))) {
         job.log('adapter disabled');
-        return 'OK:0';
+        return 'DISABLED';
+      }
+    }
+
+    if (adapter.throttle) {
+      const waitTime = await adapter.throttle(ctx);
+      const timeSinceLastRun = Date.now() - (cp.lastSyncedAt?.getTime() || 0);
+      if (timeSinceLastRun < waitTime * 1000) {
+        job.log(`throttling ingestion for ${waitTime} seconds`);
+
+        await ingestQueue.removeDeduplicationKey(`ingest:${adapter.name}:${job.data.chainId}`);
+        await ingestQueue.add(
+          'throttled',
+          { source: adapter.name, chainId: job.data.chainId },
+          { deduplication: { id: `ingest:${adapter.name}:${job.data.chainId}` }, delay: waitTime * 1000 },
+        );
+
+        return 'THROTTLED';
       }
     }
 

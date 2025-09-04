@@ -1,12 +1,12 @@
 import gql from 'graphql-tag';
 import { bignumber } from 'mathjs';
 
-import { HighWaterMark, type SourceAdapter } from '../../domain/types';
-
-import { ingestLiquidityChanges, LiquidityChange, LiquidityChangeType } from './shared';
+import { ingestLiquidityChanges, LiquidityChange, LiquidityChangeType } from '../shared';
 
 import { PoolType } from '~/database/schema';
+import { HighWaterMark, SourceAdapter } from '~/domain/types';
 import { Chain } from '~/loader/networks/chain-config';
+import { isSourceInLiveMode } from '~/sources/helpers';
 import { encode } from '~/utils/encode';
 
 const LIMIT = 1000;
@@ -69,7 +69,7 @@ transaction {
 }
 }`;
 
-export const bancorUserPoolProvider: SourceAdapter<LiquidityChange> = {
+export const bancorPoolLiquidityChangesSource: SourceAdapter<LiquidityChange> = {
   name: 'bancor_liquidity_changes',
   chains: [
     // rsk mainnet
@@ -80,8 +80,10 @@ export const bancorUserPoolProvider: SourceAdapter<LiquidityChange> = {
   highWaterMark: HighWaterMark.date,
   highWaterOverlapWindow: 172800, // 48 hours
 
-  // todo: disable until tokens and pools for specific chain are synced
-  enabled: (ctx) => Promise.resolve(true),
+  // disable until tokens and pools for specific chain are synced to live mode
+  enabled: async (ctx) =>
+    (await isSourceInLiveMode(encode.identity(['token_fetcher', ctx.chain.chainId]))) &&
+    (await isSourceInLiveMode(encode.identity(['bancor_pool_fetcher', ctx.chain.chainId]))),
 
   async fetchBackfill(cursor, { chain }) {
     const start = cursor ? parseInt(cursor, 10) : 0;

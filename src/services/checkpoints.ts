@@ -25,6 +25,8 @@ const preparedSelect = db.query.ingestionSourcesTable
 
 const log = logger.child({ service: 'checkpoints' });
 
+const get = async (sourceKey: string) => preparedSelect.execute({ key: sourceKey });
+
 const getOrCreate = async (sourceKey: string, tags: string[], highWaterMark: HighWaterMark = HighWaterMark.date) => {
   const insert = await preparedInsert.execute({
     key: sourceKey,
@@ -35,7 +37,7 @@ const getOrCreate = async (sourceKey: string, tags: string[], highWaterMark: Hig
     return insert[0] as IngestionSource;
   }
 
-  return preparedSelect.execute({ key: sourceKey });
+  return get(sourceKey);
 };
 
 const markBackfillProgress = async (cp: IngestionSource, cursor: string | null, highWater?: string) => {
@@ -99,6 +101,7 @@ const markIncrementalProgress = async (key: string, cursor?: string | null, high
 
 export const checkpoints = {
   getOrCreate,
+  get,
   markBackfillProgress,
   markIncrementalProgress,
 };

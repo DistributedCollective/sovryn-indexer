@@ -5,7 +5,6 @@ import { sources } from './sources';
 
 import { updateDexPoolList, updateDexPoolListData } from '~/cronjobs/dex/pools';
 import { swapTasks } from '~/cronjobs/dex/swaps/swaps-tasks';
-import { tokenFetcherTask } from '~/cronjobs/dex/token-fetcher-task';
 import { ammApyBlockTask } from '~/cronjobs/legacy/amm/amm-apy-block-task';
 import { ammApyDailyDataTask } from '~/cronjobs/legacy/amm/amm-apy-daily-data-task';
 import { ammCleanUpTask } from '~/cronjobs/legacy/amm/amm-cleanup-task';
@@ -27,7 +26,7 @@ export const startCrontab = async () => {
 
   await updateChains();
 
-  runOnInit();
+  // runOnInit();
 
   poolerJobs();
 
@@ -58,11 +57,11 @@ export const startCrontab = async () => {
 
 function runOnInit() {
   // // Update supported token list from the github repository on startup and every minute
-  CronJob.from({
-    cronTime: '*/1 * * * *',
-    onTick: tickWrapper(tokenFetcherTask),
-    runOnInit: true,
-  }).start();
+  // CronJob.from({
+  //   cronTime: '*/1 * * * *',
+  //   onTick: tickWrapper(tokenFetcherTask),
+  //   runOnInit: true,
+  // }).start();
 
   // Retrieve USD prices of tokens every minute
   CronJob.from({
@@ -106,10 +105,10 @@ function graphWrapperJobs() {
 }
 
 function dexJobs() {
-  CronJob.from({
-    cronTime: '*/1 * * * *',
-    onTick: tickWrapper(updateDexPoolList),
-  }).start();
+  // CronJob.from({
+  //   cronTime: '*/1 * * * *',
+  //   onTick: tickWrapper(updateDexPoolList),
+  // }).start();
 
   CronJob.from({
     cronTime: '*/1 * * * *',

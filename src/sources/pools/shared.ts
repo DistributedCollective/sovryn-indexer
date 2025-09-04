@@ -122,17 +122,5 @@ export async function ingestLiquidityChanges(items: LiquidityChange[], ctx: Cont
 
   const lastTimestamp = first(orderBy(items, 'time', 'desc'))?.time ?? null;
 
-  log.info(
-    {
-      lastTimestamp,
-      ctx,
-      items: items.length,
-      newTokens: result.newTokens.length,
-      newPositions: result.newPositions.length,
-      newChanges: result.newChanges.length,
-    },
-    'ingested liquidity changes',
-  );
-
   return { highWater: lastTimestamp ? lastTimestamp.getTime().toString() : null };
 }

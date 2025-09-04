@@ -3,6 +3,13 @@ import { sql } from 'drizzle-orm';
 import { ZeroAddress } from 'ethers';
 import { uniqBy } from 'lodash';
 
+import { networks } from '../networks';
+import { LegacyChain } from '../networks/legacy-chain';
+import { SdexChain } from '../networks/sdex-chain';
+import { NetworkFeature } from '../networks/types';
+
+import { listTokens, loadLastStoredPrices, prepareDataToStore, Price, Token } from './usd-price-store';
+
 import { findEndPrice, loadPoolPrices, PoolWithIndex } from '~/cronjobs/helpers/ambient-query';
 import { db } from '~/database/client';
 import { tokenRepository } from '~/database/repository/token-repository';
@@ -10,13 +17,6 @@ import { usdDailyPricesTable, usdHourlyPricesTable, usdPricesTable } from '~/dat
 import { LiquidityChain } from '~/loader/networks/liquidity-chain';
 import { areAddressesEqual } from '~/utils/compare';
 import { logger } from '~/utils/logger';
-
-import { networks } from '../networks';
-import { LegacyChain } from '../networks/legacy-chain';
-import { SdexChain } from '../networks/sdex-chain';
-import { NetworkFeature } from '../networks/types';
-
-import { listTokens, loadLastStoredPrices, prepareDataToStore, Price, Token } from './usd-price-store';
 
 export async function usdPriceLoader(date: Date) {
   const tokens = await listTokens();

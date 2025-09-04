@@ -13,6 +13,7 @@ import { logger } from '~/utils/logger';
 const childLogger = logger.child({ module: 'crontab:dex:pool_list' });
 
 // to populate database with new pools
+/** @deprecated */
 export const updateDexPoolList = async (ctx: CronJob) => {
   try {
     childLogger.info('Updating pool info...');

@@ -1,12 +1,12 @@
 import gql from 'graphql-tag';
 import { bignumber } from 'mathjs';
 
-import { HighWaterMark, type SourceAdapter } from '../../domain/types';
-
-import { ingestLiquidityChanges, LiquidityChange, LiquidityChangeType } from './shared';
+import { ingestLiquidityChanges, LiquidityChange, LiquidityChangeType } from '../shared';
 
 import { PoolType } from '~/database/schema';
+import { HighWaterMark, SourceAdapter } from '~/domain/types';
 import { Chain } from '~/loader/networks/chain-config';
+import { isSourceInLiveMode } from '~/sources/helpers';
 import { encode } from '~/utils/encode';
 
 const LIMIT = 500;
@@ -33,7 +33,27 @@ type Query = {
   }[];
 };
 
-export const ambientUserPoolProvider: SourceAdapter<LiquidityChange> = {
+const QUERY = `{
+id
+transactionHash
+pool {
+  base
+  quote
+  poolIdx
+}
+user
+time
+positionType
+changeType
+bidTick
+askTick
+isBid
+liq
+baseFlow
+quoteFlow
+}`;
+
+export const ambientPoolLiquidityChangesSource: SourceAdapter<LiquidityChange> = {
   name: 'ambient_liquidity_changes',
   chains: [
     // bob mainnet
@@ -44,8 +64,10 @@ export const ambientUserPoolProvider: SourceAdapter<LiquidityChange> = {
   highWaterMark: HighWaterMark.date,
   highWaterOverlapWindow: 172800, // 48 hours
 
-  // todo: disable until tokens and pools for specific chain are synced
-  enabled: (ctx) => Promise.resolve(true),
+  // disable until tokens and pools for specific chain are synced to live mode
+  enabled: async (ctx) =>
+    (await isSourceInLiveMode(encode.identity(['token_fetcher', ctx.chain.chainId]))) &&
+    (await isSourceInLiveMode(encode.identity(['ambient_pool_fetcher', ctx.chain.chainId]))),
 
   async fetchBackfill(cursor, { chain }) {
     const start = cursor ? parseInt(cursor, 10) : 0;
@@ -53,25 +75,7 @@ export const ambientUserPoolProvider: SourceAdapter<LiquidityChange> = {
       .queryFromSubgraph<Query>(
         gql`
           query ($start: Int, $limit: Int) {
-            liquidityChanges(first: $limit, skip: $start, orderBy: block, orderDirection: asc) {
-              id
-              transactionHash
-              pool {
-                base
-                quote
-                poolIdx
-              }
-              user
-              time
-              positionType
-              changeType
-              bidTick
-              askTick
-              isBid
-              liq
-              baseFlow
-              quoteFlow
-            }
+            liquidityChanges(first: $limit, skip: $start, orderBy: block, orderDirection: asc) ${QUERY}
           }
         `,
         {
@@ -98,25 +102,7 @@ export const ambientUserPoolProvider: SourceAdapter<LiquidityChange> = {
               orderBy: block
               orderDirection: asc
               where: { time_gte: $watermark }
-            ) {
-              id
-              transactionHash
-              pool {
-                base
-                quote
-                poolIdx
-              }
-              user
-              time
-              positionType
-              changeType
-              bidTick
-              askTick
-              isBid
-              liq
-              baseFlow
-              quoteFlow
-            }
+            ) ${QUERY}
           }
         `,
         {
@@ -176,6 +162,8 @@ function mapItem(item: Query['liquidityChanges'][0], chain: Chain): LiquidityCha
     },
   } satisfies Omit<LiquidityChange, 'identifier' | 'token' | 'amount'>;
 
+  // ambient can add and remove liquidity to both pool sides with single event
+  // so we need to split base and quote amounts to separate log items
   const items: LiquidityChange[] = [];
 
   if (item.baseFlow && item.baseFlow !== '0') {

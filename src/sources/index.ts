@@ -1,4 +1,14 @@
-import { ambientUserPoolProvider } from './user_pools/ambient-liquidity-changes';
-import { bancorUserPoolProvider } from './user_pools/bancor-liquidity-changes';
+import { tokenFetcherSource } from './tokens/token-fetcher';
+import { ambientPoolLiquidityChangesSource } from './pools/liquidity-changes/ambient.liquidity-changes';
+import { bancorPoolLiquidityChangesSource } from './pools/liquidity-changes/bancor.liquidity-changes';
+import { ambientPoolFetcherSource } from './pools/ambient.pool-fetcher';
 
-export const sources = [ambientUserPoolProvider, bancorUserPoolProvider] as const;
+export const sources = [
+  // fetch tokens
+  tokenFetcherSource,
+  // fetch pools
+  ambientPoolFetcherSource,
+  // fetch pool liquidity changes
+  // ambientPoolLiquiditySource,
+  // bancorPoolLiquiditySource,
+] as const;

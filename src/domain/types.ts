@@ -20,10 +20,14 @@ export interface SourceAdapter<T = unknown, C = unknown> {
   name: string;
   chains: number[];
 
+  // highWaterMark determines the strategy for watermarking (date timestamps or block numbers (blocks can be also used as alphanumeric strings))
   highWaterMark?: HighWaterMark;
   highWaterOverlapWindow?: number;
 
+  // return false if job should be skipped, defaults to true
   enabled?: (ctx: Context<C>) => Promise<boolean>;
+  // return number in seconds to throttle delay jobs after last update, disabled by default
+  throttle?: (ctx: Context<C>) => Promise<number>;
 
   fetchBackfill: (cursor: string | null, ctx: Context<C>) => Promise<BackfillResult<T>>;
   fetchIncremental?: (watermark: string, cursor: string | null, ctx: Context<C>) => Promise<SyncBatch<T>>;

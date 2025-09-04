@@ -23,6 +23,7 @@ const POOL_LIMIT = 250;
 
 const childLogger = logger.child({ module: 'crontab:dex:pools:ambient' });
 
+/** @deprecated */
 export const retrieveAmbientPoolList = async (chain: SdexChain) => {
   const tokens = await tokenRepository.listForChain(chain.context.chainId);
   if (!tokens.length) {

@@ -57,6 +57,7 @@ export const poolsTable = pgTable(
       .$onUpdate(() => new Date()),
     // to track as not processed if pool was added by dependency and may have unfilled data.
     processed: boolean('processed').default(true),
+    enabled: boolean('enabled').default(true), // if false - pool won't be returned in the list
   },
   (t) => ({
     comb: unique('pools_idx_comb').on(t.chainId, t.type, t.legacyIdentifier),
