@@ -3,7 +3,7 @@ import { CronJob } from 'cron';
 import { ingestQueue } from './jobs/queues';
 import { sources } from './sources';
 
-import { updateDexPoolList, updateDexPoolListData } from '~/cronjobs/dex/pools';
+import { updateDexPoolListData } from '~/cronjobs/dex/pools';
 import { swapTasks } from '~/cronjobs/dex/swaps/swaps-tasks';
 import { ammApyBlockTask } from '~/cronjobs/legacy/amm/amm-apy-block-task';
 import { ammApyDailyDataTask } from '~/cronjobs/legacy/amm/amm-apy-daily-data-task';
@@ -105,11 +105,6 @@ function graphWrapperJobs() {
 }
 
 function dexJobs() {
-  // CronJob.from({
-  //   cronTime: '*/1 * * * *',
-  //   onTick: tickWrapper(updateDexPoolList),
-  // }).start();
-
   CronJob.from({
     cronTime: '*/1 * * * *',
     onTick: tickWrapper(updateDexPoolListData),
