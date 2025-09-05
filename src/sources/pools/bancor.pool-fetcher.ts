@@ -157,8 +157,8 @@ function mapItem(pool: PoolInfo, chain: Chain, tokens: Token[]): NewPool {
     identifier: encode.identity([chain.chainId, PoolType.bancor, pool.id.toLowerCase()]),
     baseId: baseId.id,
     quoteId: quoteId.id,
-    baseIdentifier: encode.identity([chain.chainId, pool.token0.id.toLowerCase()]),
-    quoteIdentifier: encode.identity([chain.chainId, pool.token1.id.toLowerCase()]),
+    baseIdentifier: encode.tokenId(chain.chainId, pool.token0.id),
+    quoteIdentifier: encode.tokenId(chain.chainId, pool.token1.id),
     fee: bignumber(pool.conversionFee).lte(0)
       ? '0'
       : prettyNumber(bignumber(pool.conversionFee).div(pool.maxConversionFee).mul(100)),

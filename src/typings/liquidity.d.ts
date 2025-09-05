@@ -122,4 +122,4 @@ declare global {
   };
 }
 
-export {}
+export {};

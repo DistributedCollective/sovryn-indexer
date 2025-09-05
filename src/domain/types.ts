@@ -34,9 +34,16 @@ export interface SourceAdapter<T = unknown, C = unknown> {
 
   ingest: (items: T[], ctx: Context<C>) => Promise<IngestResult>;
 
-  /** Called when new live data is ingested
+  /**
+   * Called when new live data is ingested
    * should trigger additional tasks like summarization or computation
+   * if isLastBatch is false - additional data may still be incoming in another batch / page of the source
    */
-  onLiveIngested?: (items: T[], ctx: Context<C>) => Promise<void>;
-  onBackfillIngested?: (items: T[], ctx: Context<C>) => Promise<void>;
+  onLiveIngested?: (items: T[], ctx: Context<C>, isLastBatch?: boolean) => Promise<void>;
+  /**
+   * Called when backfill data is ingested
+   * should trigger additional tasks like summarization or computation
+   * isLastBatch indicates that this is the last batch before reaching live edge
+   */
+  onBackfillIngested?: (items: T[], ctx: Context<C>, isLastBatch?: boolean) => Promise<void>;
 }

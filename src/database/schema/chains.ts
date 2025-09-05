@@ -4,6 +4,7 @@ export const chains = pgTable('chains', {
   id: integer('id').primaryKey().notNull(),
   name: varchar('name', { length: 256 }).notNull(),
   stablecoinAddress: char('stablecoin_address', { length: 42 }).notNull(),
+  stablecoinIdentifier: char('stablecoin_identifier', { length: 64 }),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at')
     .defaultNow()

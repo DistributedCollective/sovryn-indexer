@@ -136,8 +136,8 @@ function mapItem(pool: PoolInfo, chain: Chain, tokens: Token[]): NewPool {
     identifier: encode.identity([chain.chainId, PoolType.ambient, pool.base, pool.quote, pool.poolIdx]),
     baseId: baseId.id,
     quoteId: quoteId.id,
-    baseIdentifier: encode.identity([chain.chainId, pool.base.toLowerCase()]),
-    quoteIdentifier: encode.identity([chain.chainId, pool.quote.toLowerCase()]),
+    baseIdentifier: encode.tokenId(chain.chainId, pool.base),
+    quoteIdentifier: encode.tokenId(chain.chainId, pool.quote),
     extra: {
       poolIdx: Number(pool.poolIdx),
       // lpToken: pool.lpToken, // todo

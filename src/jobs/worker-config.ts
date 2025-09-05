@@ -1,5 +1,6 @@
 import IORedis from 'ioredis';
-import config from "~/config";
+
+import config from '~/config';
 
 export const redisConnection = new IORedis(config.redisCacheUrl, { maxRetriesPerRequest: null });
 

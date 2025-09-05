@@ -12,6 +12,7 @@ export const swapsTableV2 = pgTable(
     chainId: integer('chain_id')
       .notNull()
       .references(() => chains.id, { onDelete: 'cascade' }),
+    identifier: char('identifier', { length: 64 }).unique(),
     transactionHash: char('transaction_hash', { length: 66 }).notNull(),
     baseAmount: varchar('base_amount', { length: 256 }).notNull().default('0'),
     quoteAmount: varchar('quote_amount', { length: 256 }).notNull().default('0'),
@@ -25,6 +26,8 @@ export const swapsTableV2 = pgTable(
     quoteId: integer('quote_id')
       .notNull()
       .references(() => tokens.id, { onDelete: 'cascade' }),
+    baseIdentifier: char('base_identifier', { length: 64 }),
+    quoteIdentifier: char('quote_identifier', { length: 64 }),
     poolId: integer('pool_id').references(() => poolsTable.id, { onDelete: 'cascade' }),
     type: varchar('type', { length: 64 }),
     block: integer('block').notNull(),

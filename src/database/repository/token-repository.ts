@@ -66,9 +66,7 @@ export const tokenRepository = {
   insertTokens(newTokens: NewToken[], prefill = false) {
     return db
       .insert(tokens)
-      .values(
-        newTokens.map((item) => ({ ...item, identifier: encode.identity([item.chainId, item.address.toLowerCase()]) })),
-      )
+      .values(newTokens.map((item) => ({ ...item, identifier: encode.tokenId(item.chainId, item.address) })))
       .onConflictDoNothing()
       .returning()
       .then((result) => (prefill ? handleDecimals(result) : result));

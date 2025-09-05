@@ -63,7 +63,7 @@ export const tokenFetcherSource: SourceAdapter<TokenData> = {
       const dbToken = dbTokenMap.get(address);
 
       const tokenData: NewToken = {
-        identifier: encode.identity([chain.chainId, token.address]),
+        identifier: encode.tokenId(chain.chainId, token.address),
         chainId: chain.chainId,
         address,
         symbol: token.symbol,

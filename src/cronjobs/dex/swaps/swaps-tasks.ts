@@ -6,12 +6,14 @@ import { DEFAULT_DECIMAL_PLACES } from '~/config/constants';
 import { poolsRepository } from '~/database/repository/pools-repository';
 import { swapRepositoryV2 } from '~/database/repository/swap-repository-v2';
 import { tokenRepository } from '~/database/repository/token-repository';
+import { NewSwapV2, PoolType } from '~/database/schema';
 import { networks } from '~/loader/networks';
 import { LegacyChain } from '~/loader/networks/legacy-chain';
 import { SdexChain } from '~/loader/networks/sdex-chain';
 import { NetworkFeature } from '~/loader/networks/types';
 import { areAddressesEqual } from '~/utils/compare';
 import { floorDate } from '~/utils/date';
+import { encode } from '~/utils/encode';
 import { logger } from '~/utils/logger';
 import { prettyNumber, unwei } from '~/utils/numbers';
 
@@ -80,6 +82,7 @@ async function prepareSdexSwaps(chain: SdexChain, chainId: number) {
       );
 
       return {
+        identifier: encode.identity([baseToken.chainId, PoolType.ambient, swap.transactionHash, swap.callIndex]),
         chainId,
         transactionHash: swap.transactionHash,
         baseAmount: baseAmount,
@@ -89,7 +92,9 @@ async function prepareSdexSwaps(chain: SdexChain, chainId: number) {
         callIndex: swap.callIndex,
         user: swap.user,
         baseId: baseToken.id,
+        baseIdentifier: encode.tokenId(baseToken.chainId, baseToken.address),
         quoteId: quoteToken.id,
+        quoteIdentifier: encode.tokenId(quoteToken.chainId, quoteToken.address),
         poolId: pool?.id,
         type: swap.dex,
         block: Number(swap.block),
@@ -99,7 +104,7 @@ async function prepareSdexSwaps(chain: SdexChain, chainId: number) {
           baseFlow: swap.baseFlow,
           quoteFlow: swap.quoteFlow,
         },
-      };
+      } satisfies NewSwapV2;
     });
 
     // Filter out any null values before inserting
@@ -127,7 +132,7 @@ async function prepareLegacySwaps(chain: LegacyChain, chainId: number) {
 
     logger.info({ startTime, now, items: items.swaps.length, lastSwap }, 'Querying Swaps V2 for Legacy chain');
 
-    const values = items.swaps.map((swap: any) => {
+    const values = items.swaps.map((swap) => {
       const baseToken = tokensList.find((token) => areAddressesEqual(token.address, swap.fromToken.id));
       const quoteToken = tokensList.find((token) => areAddressesEqual(token.address, swap.toToken.id));
 
@@ -137,7 +142,7 @@ async function prepareLegacySwaps(chain: LegacyChain, chainId: number) {
             areAddressesEqual(p.quote.address, swap.toToken.id)) ||
             (areAddressesEqual(p.base.address, swap.toToken.id) &&
               areAddressesEqual(p.quote.address, swap.fromToken.id))) &&
-          p.type === 'bancor',
+          p.type === PoolType.bancor,
       );
 
       if (!baseToken || !quoteToken || !swap.user) {
@@ -147,6 +152,7 @@ async function prepareLegacySwaps(chain: LegacyChain, chainId: number) {
       const quoteAmount = prettyNumber(swap.toAmount, quoteToken.decimals);
 
       return {
+        identifier: encode.identity([baseToken.chainId, PoolType.bancor, swap.id]),
         chainId,
         transactionHash: swap.transaction.id,
         baseAmount: baseAmount,
@@ -158,6 +164,8 @@ async function prepareLegacySwaps(chain: LegacyChain, chainId: number) {
         user: swap.user.id,
         baseId: baseToken.id,
         quoteId: quoteToken.id,
+        baseIdentifier: encode.tokenId(baseToken.chainId, baseToken.address),
+        quoteIdentifier: encode.tokenId(quoteToken.chainId, quoteToken.address),
         poolId: pool?.id,
         type: 'bancor',
         block: Number(swap.transaction.blockNumber),
@@ -166,7 +174,7 @@ async function prepareLegacySwaps(chain: LegacyChain, chainId: number) {
           conversionFee: String(swap.conversionFee ?? 0),
           protocolFee: String(swap.protocolFee ?? 0),
         },
-      };
+      } satisfies NewSwapV2;
     });
 
     // Filter out any null values before inserting

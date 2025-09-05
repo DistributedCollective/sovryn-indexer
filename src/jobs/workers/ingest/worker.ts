@@ -42,14 +42,7 @@ export default async function (job: Job<IngestWorkerType>) {
       const timeSinceLastRun = Date.now() - (cp.lastSyncedAt?.getTime() || 0);
       if (timeSinceLastRun < waitTime * 1000) {
         job.log(`throttling ingestion for ${waitTime} seconds`);
-
-        await ingestQueue.removeDeduplicationKey(`ingest:${adapter.name}:${job.data.chainId}`);
-        await ingestQueue.add(
-          'throttled',
-          { source: adapter.name, chainId: job.data.chainId },
-          { deduplication: { id: `ingest:${adapter.name}:${job.data.chainId}` }, delay: waitTime * 1000 },
-        );
-
+        await enqueueNextPage(job, waitTime * 1000);
         return 'THROTTLED';
       }
     }
@@ -76,17 +69,11 @@ export default async function (job: Job<IngestWorkerType>) {
       job.log('fetching incremental data');
       const { items, nextCursor } = await adapter.fetchIncremental(watermark.toString(), cp.liveCursor, ctx);
       const { highWater } = await adapter.ingest(items, ctx);
-      await adapter.onLiveIngested?.(items, ctx);
+      await adapter.onLiveIngested?.(items, ctx, nextCursor === null);
 
       await checkpoints.markIncrementalProgress(key, nextCursor, highWater);
       if (nextCursor) {
-        job.log('scheduling next page');
-        await ingestQueue.removeDeduplicationKey(`ingest:${adapter.name}:${job.data.chainId}`);
-        await ingestQueue.add(
-          'page',
-          { source: adapter.name, chainId: job.data.chainId },
-          { deduplication: { id: `ingest:${adapter.name}:${job.data.chainId}` } },
-        );
+        await enqueueNextPage(job);
       }
 
       job.log('fetching incremental data done');
@@ -115,22 +102,26 @@ async function handleBackfill(
   const { highWater } = await adapter.ingest(items, ctx);
 
   if (!isLiveFallback) {
-    await adapter.onBackfillIngested?.(items, ctx);
+    await adapter.onBackfillIngested?.(items, ctx, nextCursor === null);
     await checkpoints.markBackfillProgress(cp, nextCursor, highWater);
   } else {
-    await adapter.onLiveIngested?.(items, ctx);
+    await adapter.onLiveIngested?.(items, ctx, nextCursor === null);
     await checkpoints.markIncrementalProgress(cp.key, nextCursor, highWater);
   }
 
   if (nextCursor || atLiveEdge) {
-    job.log('scheduling next page');
-    await ingestQueue.removeDeduplicationKey(`ingest:${adapter.name}:${job.data.chainId}`);
-    await ingestQueue.add(
-      'page',
-      { source: job.data.source, chainId: job.data.chainId },
-      { deduplication: { id: `ingest:${adapter.name}:${job.data.chainId}` } },
-    );
+    await enqueueNextPage(job);
   }
 
   job.log('backfill page done');
 }
+
+const enqueueNextPage = async (job: Job<IngestWorkerType>, delay?: number) => {
+  job.log('scheduling next page');
+  await ingestQueue.removeDeduplicationKey(`ingest:${job.data.source}:${job.data.chainId}`);
+  await ingestQueue.add(
+    delay ? 'throttled' : 'page',
+    { source: job.data.source, chainId: job.data.chainId },
+    { deduplication: { id: `ingest:${job.data.source}:${job.data.chainId}` }, delay },
+  );
+};

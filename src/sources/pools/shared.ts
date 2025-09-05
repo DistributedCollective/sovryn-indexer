@@ -55,7 +55,7 @@ export async function ingestLiquidityChanges(items: LiquidityChange[], ctx: Cont
           tokenAddresses.map(
             (item) =>
               ({
-                identifier: encode.identity([item.chainId, item.token.toLowerCase()]),
+                identifier: encode.tokenId(item.chainId, item.token),
                 chainId: item.chainId,
                 address: item.token.toLowerCase(),
                 processed: false,
@@ -99,7 +99,7 @@ export async function ingestLiquidityChanges(items: LiquidityChange[], ctx: Cont
                 type: item.type,
                 extra: item.extra,
                 user: item.user,
-                tokenId: encode.identity([item.chainId, item.token.toLowerCase()]),
+                tokenId: encode.tokenId(item.chainId, item.token),
                 tokenAmount: item.amount,
                 createdAt: item.time,
               } satisfies NewPoolLiquidityChange),

@@ -11,6 +11,7 @@ import { logger } from '~/utils/logger';
 
 import { Chain } from './chain-config';
 import { NetworkConfigFile } from './types';
+import { encode } from '~/utils/encode';
 
 const path = resolve(cwd(), config.networks);
 
@@ -53,12 +54,20 @@ export const updateChains = async () => {
   const items = networks.listChains();
   const result = await db
     .insert(chains)
-    .values(items.map((chain) => ({ id: chain.chainId, name: chain.name, stablecoinAddress: chain.stablecoinAddress })))
+    .values(
+      items.map((chain) => ({
+        id: chain.chainId,
+        name: chain.name,
+        stablecoinAddress: chain.stablecoinAddress,
+        stablecoinIdentifier: encode.tokenId(chain.chainId, chain.stablecoinAddress),
+      })),
+    )
     .onConflictDoUpdate({
       target: [chains.id],
       set: {
         name: sql`excluded.name`,
         stablecoinAddress: sql`excluded.stablecoin_address`,
+        stablecoinIdentifier: sql`excluded.stablecoin_identifier`,
       },
     })
     .returning({ id: chains.id })

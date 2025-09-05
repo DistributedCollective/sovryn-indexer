@@ -1,13 +1,13 @@
 import { JsonRpcProvider } from 'ethers';
 
-import { Multicall, Multicall__factory } from '~/artifacts/abis/types';
-import { getProvider } from '~/utils/rpc/rpc';
-
 import { LegacyChain } from './legacy-chain';
 import { LiquidityChain } from './liquidity-chain';
 import { SdexChain } from './sdex-chain';
 import { NativeNetworkToken, NetworkConfig, NetworkFeature } from './types';
 import { chainIdAsHex, validateConfig } from './utils';
+
+import { Multicall, Multicall__factory } from '~/artifacts/abis/types';
+import { getProvider } from '~/utils/rpc/rpc';
 
 export class Chain {
   readonly chainId: number;

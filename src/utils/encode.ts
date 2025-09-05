@@ -7,4 +7,7 @@ const identity = (data: (string | number)[]) =>
 export const encode = {
   identity,
   sha256,
+
+  // helper for deterministic token IDs
+  tokenId: (chainId: number, address: string) => identity([chainId, address.toLowerCase()]),
 };

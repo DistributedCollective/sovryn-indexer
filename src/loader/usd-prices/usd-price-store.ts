@@ -9,6 +9,7 @@ import { networks } from '~/loader/networks';
 export type Token = {
   id: number;
   chainId: number;
+  identifier: string;
   address: string;
   decimals: number;
 };
@@ -16,6 +17,7 @@ export type Token = {
 export type CurrentPrice = {
   id: number;
   tokenId: number;
+  tokenIdentifier: string;
   value: string;
   high: string;
   low: string;
@@ -42,6 +44,7 @@ export async function loadLastStoredPrices(table: Table): Promise<CurrentPrice[]
     .select({
       id: table.id,
       tokenId: table.tokenId,
+      tokenIdentifier: table.tokenIdentifier,
       value: table.value,
       high: table.high,
       low: table.low,
@@ -69,6 +72,7 @@ export function prepareDataToStore(current: CurrentPrice[], prices: Price[]) {
         const isUpdate = last && dayjs(last.tickAt).isSame(dayjs(item.date));
         return {
           tokenId: item.id,
+          tokenIdentifier: item.identifier,
           value: item.value,
           high: isUpdate && last?.high !== undefined && bignumber(last.high).gt(item.value) ? last.high : item.value,
           low: isUpdate && last?.low !== undefined && bignumber(last.low).lt(item.value) ? last.low : item.value,
@@ -85,6 +89,7 @@ export const listTokens = (): Promise<Token[]> =>
       columns: {
         id: true,
         chainId: true,
+        identifier: true,
         address: true,
         decimals: true,
       },

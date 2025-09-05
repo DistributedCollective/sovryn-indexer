@@ -52,6 +52,32 @@ export type QueryAmmApyDataForBlock = {
   }[];
 };
 
+type LegacySwaps = {
+  swaps: LegacySwap[];
+};
+
+type LegacySwap = {
+  id: string;
+  timestamp: number;
+  transaction: {
+    id: string;
+    blockNumber: number;
+  };
+  user: {
+    id: string;
+  };
+  fromToken: {
+    id: string;
+  };
+  toToken: {
+    id: string;
+  };
+  fromAmount: string;
+  toAmount: string;
+  conversionFee: string;
+  protocolFee: string;
+};
+
 export class LegacyChain {
   readonly nativeTokenWrapper: string;
   readonly zusdTokenAddress;
@@ -84,7 +110,7 @@ export class LegacyChain {
   }
 
   public async querySwaps(from: number, to: number) {
-    return this.queryFromSubgraph<SwapsResponse>(gqlSwaps, { from, to });
+    return this.queryFromSubgraph<LegacySwaps>(gqlSwaps, { from, to });
   }
 
   public async queryBlockNumber() {
