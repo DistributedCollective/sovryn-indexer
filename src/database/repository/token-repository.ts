@@ -1,15 +1,14 @@
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { ZeroAddress } from 'ethers';
 import { groupBy } from 'lodash';
-import { ERC20__factory } from '~/artifacts/abis/types';
 
+import { ERC20__factory } from '~/artifacts/abis/types';
 import { db } from '~/database/client';
 import { lower } from '~/database/helpers';
 import { NewToken, tokens, usdDailyPricesTable } from '~/database/schema';
 import { networks } from '~/loader/networks';
 import { Chain } from '~/loader/networks/chain-config';
 import { encode } from '~/utils/encode';
-import { logger } from '~/utils/logger';
 
 export const tokenRepository = {
   listForChain: (chainId: number) =>

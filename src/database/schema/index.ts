@@ -9,3 +9,5 @@ export * from './bins';
 export * from './usd-prices';
 export * from './pools';
 export * from './ingestion';
+
+export * from './users';

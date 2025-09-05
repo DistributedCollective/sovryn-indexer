@@ -15,7 +15,7 @@ export const tokens = pgTable(
     decimals: integer('decimals').default(18),
     chainId: integer('chain_id')
       .notNull()
-      .references(() => chains.id, { onDelete: 'cascade' }),
+      .references(() => chains.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     address: char('address', { length: 42 }),
     ignored: boolean('ignored').default(false),
     swapableSince: timestamp('swapable_since'),

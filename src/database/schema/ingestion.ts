@@ -8,8 +8,8 @@ export enum IngestionSourceMode {
 }
 
 export const ingestionSourcesTable = pgTable('ingestion_sources', {
-  id: serial('id').primaryKey(),
-  key: char('key', { length: 64 }).notNull().unique(),
+  id: serial('id'),
+  key: char('key', { length: 64 }).notNull().primaryKey(),
   // workaround for drizzle prepared inserts not working with jsonb type
   // https://github.com/drizzle-team/drizzle-orm/issues/1117
   tags: varchar('tags', { length: 1024 }).default('[]'),

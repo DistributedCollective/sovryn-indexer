@@ -9,14 +9,14 @@ export const tAmmPools = pgTable(
     id: serial('id').primaryKey(),
     chainId: integer('chain_id')
       .notNull()
-      .references(() => chains.id, { onDelete: 'cascade' }),
+      .references(() => chains.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     pool: char('pool', { length: 42 }).notNull(),
     token1Id: integer('token1_id')
       .notNull()
-      .references(() => tokens.id, { onDelete: 'cascade' }),
+      .references(() => tokens.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     token2Id: integer('token2_id')
       .notNull()
-      .references(() => tokens.id, { onDelete: 'cascade' }),
+      .references(() => tokens.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     token1Volume: decimal('token1_volume', { scale: 18, precision: 50 }).notNull(),
     token2Volume: decimal('token2_volume', { scale: 18, precision: 50 }).notNull(),
     createdAt: timestamp('created_at').defaultNow(),
@@ -38,7 +38,7 @@ export const ammApyBlocks = pgTable(
     id: serial('id').primaryKey(),
     chainId: integer('chain_id')
       .notNull()
-      .references(() => chains.id, { onDelete: 'cascade' }),
+      .references(() => chains.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     poolToken: char('pool_token', { length: 42 }).notNull(),
     pool: char('pool', { length: 42 }).notNull(),
     block: integer('block').notNull(),
@@ -73,7 +73,7 @@ export const ammApyDays = pgTable(
     id: serial('id').primaryKey(),
     chainId: integer('chain_id')
       .notNull()
-      .references(() => chains.id, { onDelete: 'cascade' }),
+      .references(() => chains.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     date: timestamp('date').notNull(),
     poolToken: char('pool_token', { length: 42 }).notNull(),
     pool: char('pool', { length: 42 }).notNull(),

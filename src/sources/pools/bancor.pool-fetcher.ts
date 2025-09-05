@@ -32,6 +32,7 @@ type PoolInfo = {
   conversionFee: string;
   maxConversionFee: string;
   createdAtTimestamp: number;
+  activated: boolean;
 };
 
 type Query = {
@@ -54,6 +55,7 @@ const QUERY = `{
   conversionFee
   maxConversionFee
   createdAtTimestamp
+  activated
 }`;
 
 export const bancorPoolFetcherSource: SourceAdapter<PoolInfo> = {
@@ -73,7 +75,7 @@ export const bancorPoolFetcherSource: SourceAdapter<PoolInfo> = {
       .queryFromSubgraph<Query>(
         gql`
           query ($start: Int, $limit: Int) {
-            liquidityPools(first: $limit, skip: $start, orderBy: createdAtTimestamp, orderDirection: asc, where: { activated: true }) ${QUERY}
+            liquidityPools(first: $limit, skip: $start, orderBy: createdAtTimestamp, orderDirection: asc) ${QUERY}
           }
         `,
         {
@@ -99,7 +101,7 @@ export const bancorPoolFetcherSource: SourceAdapter<PoolInfo> = {
               skip: $start
               orderBy: createdAtTimestamp
               orderDirection: asc
-              where: { activated: true, createdAtTimestamp_gte: $watermark }
+              where: { createdAtTimestamp_gte: $watermark }
             ) ${QUERY}
           }
         `,
@@ -115,10 +117,13 @@ export const bancorPoolFetcherSource: SourceAdapter<PoolInfo> = {
 
     return { items, nextCursor };
   },
-  ingest: async (items, ctx) => {
-    if (!items.length) {
+  ingest: async (entry, ctx) => {
+    if (!entry.length) {
       return { highWater: null };
     }
+
+    // disabled bancor pools may have tokens unset
+    const items = entry.filter((pool) => pool.token0?.id && pool.token1?.id);
 
     const newTokens = uniq(items.flatMap((pool) => [pool.token0.id.toLowerCase(), pool.token1.id.toLowerCase()])).map(
       (token) =>
@@ -164,11 +169,11 @@ function mapItem(pool: PoolInfo, chain: Chain, tokens: Token[]): NewPool {
       : prettyNumber(bignumber(pool.conversionFee).div(pool.maxConversionFee).mul(100)),
     extra: {
       type: pool.type, // 1 or 2
-      version: pool.version,
-      smartToken: pool.smartToken.id,
+      version: pool.version ?? null,
+      smartToken: pool.smartToken?.id ?? null,
     },
     processed: true,
-    enabled: !(baseId?.ignored || quoteId?.ignored),
+    enabled: !(baseId?.ignored || quoteId?.ignored) && pool.activated,
     createdAt: new Date(Number(pool.createdAtTimestamp) * 1000),
   } satisfies NewPool;
 }

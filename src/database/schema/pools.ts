@@ -25,17 +25,17 @@ export const poolsTable = pgTable(
     id: serial('id').primaryKey(),
     chainId: integer('chain_id')
       .notNull()
-      .references(() => chains.id, { onDelete: 'cascade' }),
+      .references(() => chains.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     type: varchar('type', { length: 64 }).$type<PoolType>().notNull(),
     legacyIdentifier: varchar('identifier', { length: 256 }).notNull(),
     // todo: change to primary key and make nonNull after migration
     identifier: char('new_identifier', { length: 64 }).unique(),
     baseId: integer('base_id')
       .notNull()
-      .references(() => tokens.id, { onDelete: 'cascade' }),
+      .references(() => tokens.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     quoteId: integer('quote_id')
       .notNull()
-      .references(() => tokens.id, { onDelete: 'cascade' }),
+      .references(() => tokens.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     baseIdentifier: char('base_identifier', { length: 64 }),
     quoteIdentifier: char('quote_identifier', { length: 64 }),
     featured: boolean('highlighted').default(false), // if pool needs to be on top of the list
@@ -79,7 +79,7 @@ export const poolPositionsTable = pgTable('pool_positions', {
   identifier: char('identifier', { length: 64 }).notNull().primaryKey(),
   chainId: integer('chain_id')
     .notNull()
-    .references(() => chains.id, { onDelete: 'cascade' }),
+    .references(() => chains.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
   poolId: char('pool_id', { length: 64 }), // todo: add reference to pools table
   user: char('user', { length: 42 }).notNull(), // user address
   extra: jsonb('extra').$type<PoolExtra>().default({}),
@@ -98,10 +98,11 @@ export const poolLiquidityChangesTable = pgTable('pool_liquidity_changes', {
   identifier: char('identifier', { length: 64 }).notNull().primaryKey(),
   chainId: integer('chain_id')
     .notNull()
-    .references(() => chains.id, { onDelete: 'cascade' }),
+    .references(() => chains.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
   poolId: char('pool_id', { length: 64 }), // todo: add reference to pools table
   positionId: char('position_id', { length: 64 }).references(() => poolPositionsTable.identifier, {
     onDelete: 'cascade',
+    onUpdate: 'cascade',
   }),
   user: char('user', { length: 42 }).notNull(), // user address
   extra: jsonb('extra').$type<PoolLiquidityChangeExtra>().default({}),
