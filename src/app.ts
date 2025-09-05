@@ -24,9 +24,9 @@ const app = express();
 app.set('trust proxy', 2);
 
 // todo: enable optionally
-// if (config.env === 'development') {
-app.use('/admin/queues', serverAdapter.getRouter());
-// }
+if (config.env === 'development') {
+  app.use('/admin/queues', serverAdapter.getRouter());
+}
 
 app.use((req, res, next) => {
   res.setHeader('Connection', 'close');

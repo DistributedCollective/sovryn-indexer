@@ -17,6 +17,7 @@ const ingestWorker = new Worker(INGEST_QUEUE_NAME, path.resolve(__dirname, `work
     age: 86400, // keep for 1 day
     count: 1000,
   },
+  concurrency: 4,
 });
 
 onShutdown(async () => {

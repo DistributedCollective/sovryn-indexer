@@ -46,7 +46,7 @@ export async function ingestLiquidityChanges(items: LiquidityChange[], ctx: Cont
   const tokenAddresses = uniqBy(items, 'token');
   const positions = uniqBy(items, 'positionIdentifier');
 
-  const result = await db
+  await db
     .transaction(async (tx) => {
       // fill with new possibly new data
       const newTokens = await tx
@@ -59,6 +59,7 @@ export async function ingestLiquidityChanges(items: LiquidityChange[], ctx: Cont
                 chainId: item.chainId,
                 address: item.token.toLowerCase(),
                 processed: false,
+                createdAt: item.time,
               } satisfies NewToken),
           ),
         )
@@ -76,6 +77,7 @@ export async function ingestLiquidityChanges(items: LiquidityChange[], ctx: Cont
                 poolId: position.poolIdentifier,
                 chainId: position.chainId,
                 user: position.user,
+                createdAt: position.time,
               } satisfies NewPoolPosition),
           ),
         )
