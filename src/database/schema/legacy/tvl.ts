@@ -21,13 +21,13 @@ export const tvlTable = pgTable(
     id: serial('id').primaryKey(),
     chainId: integer('chain_id')
       .notNull()
-      .references(() => chains.id, { onDelete: 'cascade' }),
+      .references(() => chains.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     date: timestamp('date').notNull(),
     group: varchar('group', { length: 64 }).notNull(),
     contract: char('pool', { length: 42 }).notNull(),
     tokenId: integer('token_id')
       .notNull()
-      .references(() => tokens.id, { onDelete: 'cascade' }),
+      .references(() => tokens.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     name: varchar('name', { length: 255 }).notNull(),
     balance: decimal('balance', { scale: 18, precision: 50 }).notNull(),
     createdAt: timestamp('created_at').defaultNow(),

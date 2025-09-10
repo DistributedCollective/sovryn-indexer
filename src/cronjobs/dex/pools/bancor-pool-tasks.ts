@@ -4,64 +4,19 @@ import gql from 'graphql-tag';
 import _ from 'lodash';
 import { bignumber } from 'mathjs';
 
+import { markTokensAsSwapable } from './utils';
+
 import { MAX_DECIMAL_PLACES } from '~/config/constants';
 import { db } from '~/database/client';
-import { PoolExtended, poolsRepository } from '~/database/repository/pools-repository';
-import { tokenRepository } from '~/database/repository/token-repository';
-import { NewPool, poolsTable, PoolType } from '~/database/schema';
+import { PoolExtended } from '~/database/repository/pools-repository';
+import { poolsTable } from '~/database/schema';
 import { networks } from '~/loader/networks';
 import { LegacyChain } from '~/loader/networks/legacy-chain';
 import { areAddressesEqual } from '~/utils/compare';
 import { logger } from '~/utils/logger';
 import { prettyNumber } from '~/utils/numbers';
 
-import { markTokensAsSwapable } from './utils';
-
 const childLogger = logger.child({ module: 'crontab:dex:pools:bancor' });
-
-export const retrieveBancorPoolList = async (chain: LegacyChain) => {
-  const tokens = await tokenRepository.listForChain(chain.context.chainId);
-  if (!tokens.length) {
-    childLogger.info(`No tokens found for chain ${chain.context.chainId}. Skipping pool list retrieval`);
-    return;
-  }
-
-  const result = await getNewPools(chain);
-
-  const pools = result
-    .map(
-      (pool) =>
-        ({
-          chainId: chain.context.chainId,
-          type: PoolType.bancor,
-          identifier: pool.id,
-          baseId: tokens.find((token) => areAddressesEqual(token.address, pool.token0.id))?.id,
-          quoteId: tokens.find((token) => areAddressesEqual(token.address, pool.token1.id))?.id,
-          fee: bignumber(pool.conversionFee).lte(0)
-            ? '0'
-            : prettyNumber(bignumber(pool.conversionFee).div(pool.maxConversionFee).mul(100)),
-          extra: {
-            type: pool.type, // 1 or 2
-            version: pool.version,
-            smartToken: pool.smartToken.id,
-          },
-        } satisfies NewPool),
-    )
-    .filter((pool) => pool.baseId && pool.quoteId);
-
-  if (pools.length === 0) {
-    childLogger.info(`No new pools found for chain ${chain.context.chainId}`);
-    return;
-  }
-
-  const inserted = await poolsRepository.insertPools(pools);
-
-  childLogger.info(`Inserted ${inserted.length} new pools for chain ${chain.context.chainId}`);
-
-  if (inserted.length) {
-    await markTokensAsSwapable(inserted);
-  }
-};
 
 export const updateBancorPool = async (pool: PoolExtended) => {
   const chain = networks.getByChainId(pool.chainId);
@@ -115,52 +70,6 @@ export const updateBancorPool = async (pool: PoolExtended) => {
   // todo: remove this once confirmed that tokens are updated correctly on pool creation step.
   await markTokensAsSwapable([pool]);
 };
-
-type GetNewPoolsResult = {
-  liquidityPools: {
-    id: string;
-    type: number;
-    version: number | null;
-    smartToken: {
-      id: string;
-    };
-    token0: {
-      id: string;
-    };
-    token1: {
-      id: string;
-    };
-    conversionFee: string;
-    maxConversionFee: string;
-  }[];
-};
-
-async function getNewPools(chain: LegacyChain) {
-  return chain
-    .queryFromSubgraph<GetNewPoolsResult>(
-      gql`
-        query {
-          liquidityPools(where: { activated: true }) {
-            id
-            type
-            version
-            smartToken {
-              id
-            }
-            token0 {
-              id
-            }
-            token1 {
-              id
-            }
-            conversionFee
-            maxConversionFee
-          }
-        }
-      `,
-    )
-    .then((data) => data.liquidityPools);
-}
 
 type GetPoolData = {
   liquidityPool: {

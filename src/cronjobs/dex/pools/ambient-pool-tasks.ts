@@ -3,75 +3,16 @@ import { and, eq, gte, sql, sum } from 'drizzle-orm';
 import _ from 'lodash';
 import { bignumber } from 'mathjs';
 
-import { MAX_DECIMAL_PLACES } from '~/config/constants';
-import { db } from '~/database/client';
-import { PoolExtended, poolsRepository } from '~/database/repository/pools-repository';
-import { tokenRepository } from '~/database/repository/token-repository';
-import { NewPool, Pool, poolsTable, PoolType, swapsTableV2 } from '~/database/schema';
-import { networks } from '~/loader/networks';
-import { SdexChain } from '~/loader/networks/sdex-chain';
-import { areAddressesEqual } from '~/utils/compare';
-import { logger } from '~/utils/logger';
-import { prettyNumber } from '~/utils/numbers';
-import { toDisplayPrice } from '~/utils/price';
-
 import { getPoolStats, markTokensAsSwapable } from './utils';
 
-// todo: think about pagination...
-const POOL_LIMIT = 250;
-
-const childLogger = logger.child({ module: 'crontab:dex:pools:ambient' });
-
-export const retrieveAmbientPoolList = async (chain: SdexChain) => {
-  const tokens = await tokenRepository.listForChain(chain.context.chainId);
-  if (!tokens.length) {
-    childLogger.info(`No tokens found for chain ${chain.context.chainId}. Skipping pool list retrieval`);
-    return;
-  }
-
-  const query = await chain.queryPools(POOL_LIMIT);
-
-  const pools = query.pools
-    .map(
-      (pool) =>
-        ({
-          chainId: chain.context.chainId,
-          type: PoolType.ambient,
-          identifier: `${pool.base}_${pool.quote}_${pool.poolIdx}`,
-          baseId: tokens.find((token) => areAddressesEqual(token.address, pool.base))?.id,
-          quoteId: tokens.find((token) => areAddressesEqual(token.address, pool.quote))?.id,
-          extra: {
-            poolIdx: pool.poolIdx,
-            // lpToken: pool.lpToken, // todo
-          },
-        } satisfies NewPool),
-    )
-    .filter((pool) => pool.baseId && pool.quoteId);
-
-  if (pools.length === 0) {
-    childLogger.info(`No new pools found for chain ${chain.context.chainId}`);
-    return;
-  }
-
-  const inserted = await poolsRepository.insertPools(pools);
-
-  childLogger.info(`Inserted ${inserted.length} new pools for chain ${chain.context.chainId}`);
-
-  if (inserted.length) {
-    await Promise.allSettled([...inserted.map(updateAmbientLpToken(chain)), markTokensAsSwapable(inserted)]);
-  }
-};
-
-const updateAmbientLpToken = (chain: SdexChain) => async (pool: Pool) => {
-  const [base, quote, poolIdx] = pool.identifier.split('_');
-  const lpToken = await chain.query.queryPoolLpTokenAddress(base, quote, poolIdx);
-  if (lpToken) {
-    await db
-      .update(poolsTable)
-      .set({ extra: { ...pool.extra, lpToken: lpToken.toLowerCase() } })
-      .where(eq(poolsTable.id, pool.id));
-  }
-};
+import { MAX_DECIMAL_PLACES } from '~/config/constants';
+import { db } from '~/database/client';
+import { PoolExtended } from '~/database/repository/pools-repository';
+import { poolsTable, swapsTableV2 } from '~/database/schema';
+import { networks } from '~/loader/networks';
+import { SdexChain } from '~/loader/networks/sdex-chain';
+import { prettyNumber } from '~/utils/numbers';
+import { toDisplayPrice } from '~/utils/price';
 
 export const updateAmbientPool = async (pool: PoolExtended) => {
   const chain = networks.getByChainId(pool.chainId);

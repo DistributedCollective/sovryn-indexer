@@ -56,6 +56,13 @@ const config = convict({
     env: 'READ_ONLY_MODE',
     arg: 'readOnly',
   },
+  spawnWorkers: {
+    doc: 'Spawn worker processes',
+    format: Boolean,
+    default: false,
+    env: 'SPAWN_WORKERS',
+    arg: 'spawnWorkers',
+  },
 });
 
 config.validate({ allowed: 'strict' });

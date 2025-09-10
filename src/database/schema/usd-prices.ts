@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, timestamp, varchar, integer, unique, serial } from 'drizzle-orm/pg-core';
+import { pgTable, timestamp, varchar, integer, unique, serial, char } from 'drizzle-orm/pg-core';
 
 import { tokens } from './tokens';
 
@@ -16,7 +16,8 @@ export const usdPricesTable = pgTable(
     id: serial('id').primaryKey(),
     tokenId: integer('token_id')
       .notNull()
-      .references(() => tokens.id, { onDelete: 'cascade' }),
+      .references(() => tokens.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    tokenIdentifier: char('token_identifier', { length: 64 }),
     value: varchar('value', { length: 256 }).notNull().default('0'),
     low: varchar('low', { length: 256 }).notNull().default('0'),
     high: varchar('high', { length: 256 }).notNull().default('0'),
@@ -45,7 +46,8 @@ export const usdHourlyPricesTable = pgTable(
     id: serial('id').primaryKey(),
     tokenId: integer('token_id')
       .notNull()
-      .references(() => tokens.id, { onDelete: 'cascade' }),
+      .references(() => tokens.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    tokenIdentifier: char('token_identifier', { length: 64 }),
     value: varchar('value', { length: 256 }).notNull().default('0'),
     low: varchar('low', { length: 256 }).notNull().default('0'),
     high: varchar('high', { length: 256 }).notNull().default('0'),
@@ -74,7 +76,8 @@ export const usdDailyPricesTable = pgTable(
     id: serial('id').primaryKey(),
     tokenId: integer('token_id')
       .notNull()
-      .references(() => tokens.id, { onDelete: 'cascade' }),
+      .references(() => tokens.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    tokenIdentifier: char('token_identifier', { length: 64 }),
     value: varchar('value', { length: 256 }).notNull().default('0'),
     low: varchar('low', { length: 256 }).notNull().default('0'),
     high: varchar('high', { length: 256 }).notNull().default('0'),

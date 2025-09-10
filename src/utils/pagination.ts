@@ -3,9 +3,9 @@ import { PgColumn, PgSelect } from 'drizzle-orm/pg-core';
 import { Request } from 'express';
 import Joi from 'joi';
 
-import { db } from '~/database/client';
-
 import { validate } from './validation';
+
+import { db } from '~/database/client';
 
 const MAX_PAGINATION_LIMIT = 1000;
 const DEFAULT_PAGINATION_LIMIT = 500;

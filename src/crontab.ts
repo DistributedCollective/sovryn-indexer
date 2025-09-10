@@ -1,15 +1,17 @@
 import { CronJob } from 'cron';
 
-import { updateDexPoolList, updateDexPoolListData } from '~/cronjobs/dex/pools';
+import { ingestQueue } from './jobs/queues';
+import { sources } from './sources';
+
+import { updateDexPoolListData } from '~/cronjobs/dex/pools';
 import { swapTasks } from '~/cronjobs/dex/swaps/swaps-tasks';
-import { tokenFetcherTask } from '~/cronjobs/dex/token-fetcher-task';
 import { ammApyBlockTask } from '~/cronjobs/legacy/amm/amm-apy-block-task';
 import { ammApyDailyDataTask } from '~/cronjobs/legacy/amm/amm-apy-daily-data-task';
 import { ammCleanUpTask } from '~/cronjobs/legacy/amm/amm-cleanup-task';
 import { ammPoolsTask } from '~/cronjobs/legacy/amm/amm-pools-task';
 import { tvlTask } from '~/cronjobs/legacy/tvl-task';
 import { retrieveUsdPrices } from '~/cronjobs/retrieve-usd-prices';
-import { updateChains } from '~/loader/networks';
+import { networks, updateChains } from '~/loader/networks';
 import { getLastPrices } from '~/loader/price';
 
 export const tickWrapper = (fn: (context: CronJob) => Promise<void>) => {
@@ -20,7 +22,9 @@ export const tickWrapper = (fn: (context: CronJob) => Promise<void>) => {
 
 export const startCrontab = async () => {
   // populate chain config on startup before running other tasks
+
   await updateChains();
+  poolerJobs();
 
   runOnInit();
 
@@ -43,19 +47,11 @@ export const startCrontab = async () => {
       this.start();
     },
   });
-
-  tempJobs();
 };
 
 function runOnInit() {
-  // Update supported token list from the github repository on startup and every minute
-  CronJob.from({
-    cronTime: '*/1 * * * *',
-    onTick: tickWrapper(tokenFetcherTask),
-    runOnInit: true,
-  }).start();
-
   // Retrieve USD prices of tokens every minute
+  // todo: move retrieval to ingest worker
   CronJob.from({
     cronTime: '*/5 * * * *',
     onTick: tickWrapper(retrieveUsdPrices),
@@ -99,11 +95,6 @@ function graphWrapperJobs() {
 function dexJobs() {
   CronJob.from({
     cronTime: '*/1 * * * *',
-    onTick: tickWrapper(updateDexPoolList),
-  }).start();
-
-  CronJob.from({
-    cronTime: '*/1 * * * *',
     onTick: tickWrapper(updateDexPoolListData),
   }).start();
 
@@ -114,10 +105,24 @@ function dexJobs() {
   }).start();
 }
 
-function tempJobs() {
-  // CronJob.from({
-  //   cronTime: '*/5 * * * *',
-  //   onTick: tickWrapper(priceFeedTask),
-  //   runOnInit: true,
-  // }).start();
+function poolerJobs() {
+  CronJob.from({
+    cronTime: '*/10 * * * * *',
+    onTick: tickWrapper(async () => {
+      const chains = networks.listChains();
+      const items = sources.flatMap((item) =>
+        item.chains
+          .filter((chainId) => chains.find((c) => c.chainId === chainId))
+          .map((chainId) => ({ source: item.name, chainId })),
+      );
+
+      await Promise.allSettled(
+        items.map((s) =>
+          ingestQueue.add('poll', s, {
+            deduplication: { id: `ingest:${s.source}:${s.chainId}` },
+          }),
+        ),
+      );
+    }),
+  }).start();
 }

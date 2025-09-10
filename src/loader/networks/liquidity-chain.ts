@@ -1,11 +1,11 @@
 import { DocumentNode } from 'graphql';
 import gql from 'graphql-tag';
 
-import { queryFromSubgraph } from '~/loader/subgraph';
-import { loadGqlFromArtifacts } from '~/utils/subgraph';
-
 import type { Chain } from './chain-config';
 import type { LiquidityChainConfig } from './types';
+
+import { queryFromSubgraph } from '~/loader/subgraph';
+import { loadGqlFromArtifacts } from '~/utils/subgraph';
 
 const gqlLiquidityTokens = loadGqlFromArtifacts('graphQueries/liquidity/tokens.graphql');
 const gqlTokenPrices = loadGqlFromArtifacts('graphQueries/liquidity/token-prices.graphql');

@@ -1,14 +1,14 @@
 import { Router, Request, Response } from 'express';
 
-import { userAwareMiddleware } from '~/middleware/user-address-middleware';
-import { toResponse } from '~/utils/http-response';
-import { asyncRoute } from '~/utils/route-wrapper';
-
 import poolsController from './pools';
 import swapsController from './swaps';
 import tickersController from './tickers';
 import tokensController from './tokens';
 import usersController from './users';
+
+import { userAwareMiddleware } from '~/middleware/user-address-middleware';
+import { toResponse } from '~/utils/http-response';
+import { asyncRoute } from '~/utils/route-wrapper';
 
 const router = Router();
 

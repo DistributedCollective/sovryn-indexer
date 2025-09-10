@@ -1,8 +1,6 @@
 import { logger } from '~/utils/logger';
 import { sleep } from '~/utils/sleep';
 
-import migrate from './migrate';
-
 (async () => {
   const args = process.argv.slice(2);
 
@@ -10,9 +8,6 @@ import migrate from './migrate';
   console.log('CMD started');
 
   switch (args[0]) {
-    case 'migrate':
-      await migrate();
-      break;
     case 'pool':
       await import('./pool').then((mod) => mod.default());
       break;

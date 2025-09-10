@@ -30,7 +30,7 @@ router.get(
             last_price: pool.price,
             base_volume: pool.dailyBaseVolume,
             target_volume: pool.dailyQuoteVolume,
-            pool_id: pool.identifier,
+            pool_id: pool.legacyIdentifier,
             liquidity_in_usd: prettyNumber(bignumber(baseUsd).add(quoteUsd), DEFAULT_USD_DECIMAL_PLACES),
           };
         });

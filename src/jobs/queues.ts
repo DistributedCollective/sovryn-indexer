@@ -1,16 +1,6 @@
-import { Queue, Worker } from 'bullmq';
-import config from '~/config';
-import IORedis from 'ioredis';
-import path from 'path';
-import { logger } from '~/utils/logger';
+import { Queue } from 'bullmq';
 
-const connection = new IORedis(config.redisCacheUrl, { maxRetriesPerRequest: null});
+import { INGEST_QUEUE_NAME, redisConnection } from './worker-config';
+import { IngestWorkerType } from './workers/ingest/types';
 
-export const ingestQueue = new Queue<{ source: string; cursor?: string | null }>('ingest', { connection });
-
-new Worker('ingest', path.resolve(__dirname, `workers/ingest.worker.js`), {
-  connection, concurrency: 4, useWorkerThreads: true,
-});
-
-
-logger.info('Queues initialized');
+export const ingestQueue = new Queue<IngestWorkerType>(INGEST_QUEUE_NAME, { connection: redisConnection });

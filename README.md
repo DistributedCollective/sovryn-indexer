@@ -42,3 +42,24 @@ Run image
 
 Refer to the [API documentation](docs/README.md) for more information on how to use the API.
 
+## Testing with real data
+
+Dump your production database contents to a file:
+
+If your testing database is empty, dump the entire database (I recommend using this):
+
+```bash
+pg_dump --no-owner --no-privileges --no-publications --no-subscriptions --no-tablespaces -Fc -v -d "<postgres connection string>" -f database.bak
+```
+
+Otherwise, only dump the data:
+
+```bash
+pg_dump --no-owner --no-privileges --no-publications --no-subscriptions --no-tablespaces --data-only --column-inserts -Fc -v -d "<postgres connection string>" -f database.bak
+```
+
+Restore the database contents to your local database:
+
+```bash
+pg_restore --no-owner -v -d "postgresql://postgres:secret@127.0.0.1:5432/db" database.bak
+```

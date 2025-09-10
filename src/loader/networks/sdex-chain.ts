@@ -1,13 +1,13 @@
 import { DocumentNode } from 'graphql';
 import gql from 'graphql-tag';
 
+import type { Chain } from './chain-config';
+import type { SdexChainConfig } from './types';
+
 import { SdexQuery, SdexQuery__factory, SdexSwapDex, SdexSwapDex__factory } from '~/artifacts/abis/types';
 import { queryFromSubgraph } from '~/loader/subgraph';
 import { getUserPositions } from '~/loader/userPositionsLoader';
 import { loadGqlFromArtifacts } from '~/utils/subgraph';
-
-import type { Chain } from './chain-config';
-import type { SdexChainConfig } from './types';
 
 const gqlPools = loadGqlFromArtifacts('graphQueries/sdex/pools.graphql');
 const gqlLiquidityChanges = loadGqlFromArtifacts('graphQueries/sdex/liqchanges.graphql');

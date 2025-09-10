@@ -4,6 +4,8 @@ import express from 'express';
 import helmet from 'helmet';
 import pino from 'pino-http';
 
+import { serverAdapter } from './jobs/board';
+
 import config from '~/config';
 import { errorHandler } from '~/middleware/error-handler';
 import createRateLimiterMiddleware from '~/middleware/rateLimiter';
@@ -20,6 +22,11 @@ const rateLimiterMiddleware = createRateLimiterMiddleware({
 const app = express();
 // app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
 app.set('trust proxy', 2);
+
+// todo: enable optionally
+if (config.env === 'development') {
+  app.use('/admin/queues', serverAdapter.getRouter());
+}
 
 app.use((req, res, next) => {
   res.setHeader('Connection', 'close');
