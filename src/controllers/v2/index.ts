@@ -1,3 +1,4 @@
+import { asc } from 'drizzle-orm';
 import { Router, Request, Response } from 'express';
 
 import poolsController from './pools';
@@ -6,6 +7,8 @@ import tickersController from './tickers';
 import tokensController from './tokens';
 import usersController from './users';
 
+import { db } from '~/database/client';
+import { ingestionSourcesTable } from '~/database/schema';
 import { userAwareMiddleware } from '~/middleware/user-address-middleware';
 import { toResponse } from '~/utils/http-response';
 import { asyncRoute } from '~/utils/route-wrapper';
@@ -15,6 +18,16 @@ const router = Router();
 router.get(
   '/',
   asyncRoute(async (req: Request, res: Response) => res.json(toResponse(req.app.locals.network))),
+);
+
+router.get(
+  '/sync-status',
+  asyncRoute(async (req: Request, res: Response) => {
+    const items = await db.query.ingestionSourcesTable.findMany({
+      orderBy: asc(ingestionSourcesTable.id),
+    });
+    res.json(toResponse(items));
+  }),
 );
 
 router.use('/tokens', tokensController);

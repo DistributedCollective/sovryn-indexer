@@ -1,8 +1,11 @@
 import path from 'node:path';
+
 import { Worker } from 'bullmq';
+
 import { INGEST_QUEUE_NAME, redisConnection } from './worker-config';
-import { onShutdown } from '~/utils/shutdown';
+
 import { logger } from '~/utils/logger';
+import { onShutdown } from '~/utils/shutdown';
 
 logger.info('Spawning ingest worker.');
 
@@ -18,6 +21,7 @@ const ingestWorker = new Worker(INGEST_QUEUE_NAME, path.resolve(__dirname, `work
     count: 1000,
   },
   concurrency: 4,
+  autorun: true,
 });
 
 onShutdown(async () => {

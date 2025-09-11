@@ -123,9 +123,7 @@ function poolerJobs() {
             deduplication: { id: `ingest:${s.source}:${s.chainId}` },
           }),
         ),
-      ).then(() => {
-        logger.warn({ items }, `Pooler: added ${items.length} items to the queue`);
-      });
+      );
     }),
   }).start();
 }

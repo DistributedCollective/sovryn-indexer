@@ -63,6 +63,13 @@ const config = convict({
     env: 'SPAWN_WORKERS',
     arg: 'spawnWorkers',
   },
+  queueAccess: {
+    doc: 'Queue access mode',
+    format: Boolean,
+    default: false,
+    env: 'QUEUE_ACCESS',
+    arg: 'queueAccess',
+  },
 });
 
 config.validate({ allowed: 'strict' });

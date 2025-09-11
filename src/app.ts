@@ -23,8 +23,7 @@ const app = express();
 // app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
 app.set('trust proxy', 2);
 
-// todo: enable optionally
-if (config.env === 'development') {
+if (config.env === 'development' || config.queueAccess) {
   app.use('/admin/queues', serverAdapter.getRouter());
 }
 
