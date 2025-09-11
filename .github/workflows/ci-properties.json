@@ -14,11 +14,13 @@
     "LOG_LEVEL": "debug",
     "PORT": "3000",
     "POSTGRES_PORT": "5432",
-    "TZ": "UTC",
+    "TZ": "UTC"
+  },
+  "DEV_ENV_VARS": {
+    "NODE_ENV": "production",
     "SPAWN_WORKERS": "true",
     "QUEUE_ACCESS": "true"
   },
-  "DEV_ENV_VARS": {},
   "STAGING_ENV_VARS": {},
   "PROD_ENV_VARS": {
     "NODE_ENV": "production",
