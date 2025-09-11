@@ -8,8 +8,6 @@ import { startCrontab } from '~/crontab';
 
 startApp();
 
-logger.warn({ env: process.env, config }, `DEBUG ENV`);
-
 if (!config.readOnly) {
   logger.info('Running in read-write mode. Starting crontab...');
   startCrontab();
