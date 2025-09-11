@@ -13,7 +13,10 @@ if (!config.readOnly) {
   startCrontab();
 
   if (config.spawnWorkers) {
+    logger.info('Spawning worker processes...');
     import('./jobs/worker-spawner');
+  } else {
+    logger.warn('Worker processes are disabled.');
   }
 } else {
   logger.info('Running in read-only mode.');

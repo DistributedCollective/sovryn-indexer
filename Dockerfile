@@ -11,7 +11,6 @@ COPY . ./
 RUN pnpm install && pnpm typechain && pnpm build && cp -r /src/artifacts/* /build/artifacts
 
 ENV NODE_ENV=production
-ENV NODE_PATH=./build
 
 EXPOSE 8000
 
