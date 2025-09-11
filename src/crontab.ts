@@ -2,6 +2,7 @@ import { CronJob } from 'cron';
 
 import { ingestQueue } from './jobs/queues';
 import { sources } from './sources';
+import { logger } from './utils/logger';
 
 import { updateDexPoolListData } from '~/cronjobs/dex/pools';
 import { swapTasks } from '~/cronjobs/dex/swaps/swaps-tasks';
@@ -28,25 +29,25 @@ export const startCrontab = async () => {
 
   runOnInit();
 
-  dexJobs();
+  // dexJobs();
 
   // LEGACY JOBS
-  ammApyJobs();
-  graphWrapperJobs();
+  // ammApyJobs();
+  // graphWrapperJobs();
 
   // update cached prices every minute
-  CronJob.from({
-    cronTime: '*/1 * * * *',
-    onTick: async function () {
-      this.stop();
-      try {
-        await getLastPrices(true);
-      } catch (e) {
-        console.error(e);
-      }
-      this.start();
-    },
-  });
+  // CronJob.from({
+  //   cronTime: '*/1 * * * *',
+  //   onTick: async function () {
+  //     this.stop();
+  //     try {
+  //       await getLastPrices(true);
+  //     } catch (e) {
+  //       console.error(e);
+  //     }
+  //     this.start();
+  //   },
+  // });
 };
 
 function runOnInit() {
@@ -122,7 +123,9 @@ function poolerJobs() {
             deduplication: { id: `ingest:${s.source}:${s.chainId}` },
           }),
         ),
-      );
+      ).then(() => {
+        logger.warn({ items }, `Pooler: added ${items.length} items to the queue`);
+      });
     }),
   }).start();
 }
