@@ -12,7 +12,7 @@ if (!config.readOnly) {
   logger.info('Running in read-write mode. Starting crontab...');
   startCrontab();
 
-  if (config.spawnWorkers) {
+  if (config.spawnWorkers || config.env === 'production') {
     logger.info('Spawning worker processes...');
     import('./jobs/worker-spawner');
   } else {

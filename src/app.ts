@@ -23,9 +23,7 @@ const app = express();
 // app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
 app.set('trust proxy', 2);
 
-if (config.env === 'development' || config.queueAccess) {
-  app.use('/admin/queues', serverAdapter.getRouter());
-}
+app.use('/admin/queues', serverAdapter.getRouter());
 
 app.use((req, res, next) => {
   res.setHeader('Connection', 'close');
