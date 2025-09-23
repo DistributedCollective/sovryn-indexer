@@ -36,7 +36,7 @@ export const poolsRepository = {
         .returning()
     );
   },
-  listForChain: (chainId: number) =>
+  listForChain: (chainId: number, onlyEnabled = false) =>
     db.query.poolsTable.findMany({
       columns: {
         id: true,
@@ -73,7 +73,7 @@ export const poolsRepository = {
           },
         },
       },
-      where: eq(poolsTable.chainId, chainId),
+      where: and(eq(poolsTable.chainId, chainId), onlyEnabled ? eq(poolsTable.enabled, true) : undefined),
       // order by featured first, then by creation date
       orderBy: sql`(${poolsTable.featured} is true) desc, ${poolsTable.createdAt} desc`,
     }),

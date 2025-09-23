@@ -15,7 +15,7 @@ router.get(
     maybeCacheResponse(
       res,
       `/dex/${req.app.locals.network.chainId}/pools`,
-      async () => poolsRepository.listForChain(req.app.locals.network.chainId),
+      async () => poolsRepository.listForChain(req.app.locals.network.chainId, true),
       DEFAULT_CACHE_TTL,
     ).then((data) => res.json(toResponse(data))),
   ),
