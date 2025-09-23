@@ -3,6 +3,8 @@ import { and, eq, between, lte, desc, or, inArray } from 'drizzle-orm';
 import _ from 'lodash';
 import { BigNumber, bignumber, max, min } from 'mathjs';
 
+import { Interval } from './types';
+
 import { LONG_CACHE_TTL } from '~/config/constants';
 import { Timeframe, TIMEFRAME_ROUNDING } from '~/controllers/main-controller.constants';
 import { db } from '~/database/client';
@@ -12,8 +14,6 @@ import { ValidationError } from '~/utils/custom-error';
 import { toNearestDate } from '~/utils/date';
 import { logger } from '~/utils/logger';
 import { prettyNumber } from '~/utils/numbers';
-
-import { Interval } from './types';
 
 export const constructCandlesticks = async (intervals: Interval[], timeframe: number) => {
   const groups = groupIntervals(intervals, timeframe);
@@ -95,7 +95,6 @@ export const getPrices = async (
 
   if (baseTokenData.length === 0 || quoteTokenData.length === 0) {
     // no data to build the chart...
-    logger.warn('No data to build the chart');
     return [];
   }
 
@@ -103,11 +102,6 @@ export const getPrices = async (
 
   let start = dayjs(tokenData.start).startOf(unit);
   const end = dayjs(endTimestamp).startOf(unit).unix();
-
-  logger.info(
-    { s: startTimestamp.toISOString(), start: start.toISOString(), end: dayjs(endTimestamp).toISOString() },
-    'Building chart',
-  );
 
   const items: PriceItem[] = [];
 
