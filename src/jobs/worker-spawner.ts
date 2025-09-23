@@ -2,15 +2,16 @@ import path from 'node:path';
 
 import { Worker } from 'bullmq';
 
-import { INGEST_QUEUE_NAME, redisConnection } from './worker-config';
+import { INGEST_QUEUE_NAME } from './worker-config';
 
 import { logger } from '~/utils/logger';
+import { redis } from '~/utils/redis-client';
 import { onShutdown } from '~/utils/shutdown';
 
 logger.info('Spawning ingest worker.');
 
 const ingestWorker = new Worker(INGEST_QUEUE_NAME, path.resolve(__dirname, `workers/ingest/worker.js`), {
-  connection: redisConnection,
+  connection: redis,
   useWorkerThreads: true,
   removeOnComplete: {
     age: 3600, // keep for 1 hour

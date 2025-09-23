@@ -1,21 +1,17 @@
-import { createClient } from 'redis';
-
-import config from '~/config';
+import { Redis } from 'ioredis';
 
 import { logger } from './logger';
 import { onShutdown } from './shutdown';
 
-export const redis = createClient({
-  url: config.redisCacheUrl,
-})
+import config from '~/config';
+
+export const redis = new Redis(config.redisCacheUrl, { maxRetriesPerRequest: null })
   .on('connect', () => {
     logger.info('Redis client connected');
   })
   .on('error', (err) => {
-    logger.error(err, 'Redis error');
+    logger.warn(err, 'Redis error');
   });
-
-redis.connect();
 
 onShutdown(async () => {
   await redis.disconnect();

@@ -68,9 +68,7 @@ export async function maybeCacheResponse<T>(
 
 export const cache = {
   put: async (key: string, value: string, durationInSeconds: number) =>
-    redis.set(`cache:${key}`, value, {
-      EX: durationInSeconds,
-    }),
+    redis.set(`cache:${key}`, value, 'EX', durationInSeconds),
   get: async (key: string) => redis.get(`cache:${key}`),
   exp: async (key: string) => /*(await redis.pExpireTime(`cache:${key}`)) ?? */ Date.now(),
 };
