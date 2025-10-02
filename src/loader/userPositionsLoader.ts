@@ -2,6 +2,9 @@ import dayjs from 'dayjs';
 import { ethers } from 'ethers';
 import { bignumber } from 'mathjs';
 
+import { Chain } from './networks/chain-config';
+import { getErc20Balance } from './token';
+
 import { SdexQuery } from '~/artifacts/abis/types';
 import {
   aggregatePositions,
@@ -13,10 +16,11 @@ import {
   weightedAverageDuration,
 } from '~/utils/aggregationUtils';
 import { calculateAPR } from '~/utils/aprCalculation';
-import { logger } from '~/utils/logger';
 
-import { Chain } from './networks/chain-config';
-import { getErc20Balance } from './token';
+export enum PositionType {
+  ambient = 'ambient',
+  concentrated = 'concentrated',
+}
 
 export async function getUserPositions(
   queryContract: SdexQuery,

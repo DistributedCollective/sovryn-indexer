@@ -1,5 +1,7 @@
 import { bignumber } from 'mathjs';
 
+import { PositionType } from '../loader/userPositionsLoader';
+
 import { areAddressesEqual } from './compare';
 
 const MIN_NUMERIC_STABLE_FLOW = 1e-9;
