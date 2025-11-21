@@ -1,5 +1,7 @@
 import { Router } from 'express';
 
+import { prepareSummary } from './cmc.utils';
+
 import { LONG_CACHE_TTL } from '~/config/constants';
 import { networks } from '~/loader/networks';
 import { NetworkFeature } from '~/loader/networks/types';
@@ -8,8 +10,6 @@ import { networkAwareMiddleware } from '~/middleware/network-middleware';
 import { maybeCacheResponse } from '~/utils/cache';
 import { toResponse } from '~/utils/http-response';
 import { asyncRoute } from '~/utils/route-wrapper';
-
-import { prepareSummary } from './cmc.utils';
 
 const router = Router();
 
