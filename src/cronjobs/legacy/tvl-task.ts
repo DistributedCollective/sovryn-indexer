@@ -1,20 +1,11 @@
 import { CronJob } from 'cron';
 
+import { buildLegacySnapshot, buildSdexSnapshot, saveSnapshotAtomic } from './tvl-snapshot';
+
 import { networks } from '~/loader/networks';
 import { LegacyChain } from '~/loader/networks/legacy-chain';
 import { SdexChain } from '~/loader/networks/sdex-chain';
 import { NetworkFeature } from '~/loader/networks/types';
-import {
-  getAmmPoolTvl,
-  getFishTvl,
-  getLendingPoolTvl,
-  getMyntTvl,
-  getProtocolTvl,
-  getSdexTvl,
-  getStakingTvl,
-  getSubprotocolTvl,
-  getZeroTvl,
-} from '~/loader/tvl/prepare-tvl-cronjob-data';
 import { logger } from '~/utils/logger';
 
 const childLogger = logger.child({ module: 'crontab:tvl' });
@@ -26,12 +17,16 @@ export const tvlTask = async (ctx: CronJob) => {
   const items = networks.listChains();
 
   for (const item of items) {
-    if (item.hasFeature(NetworkFeature.legacy)) {
-      await processLegacyChain(item.legacy);
-    }
+    try {
+      if (item.hasFeature(NetworkFeature.legacy)) {
+        await handleLegacyChain(item.legacy);
+      }
 
-    if (item.hasFeature(NetworkFeature.sdex)) {
-      await processSdexChain(item.sdex);
+      if (item.hasFeature(NetworkFeature.sdex)) {
+        await handleSdexChain(item.sdex);
+      }
+    } catch (err) {
+      childLogger.error({ chain: item.chainId, err }, 'Failed to build/save TVL snapshot for chain');
     }
   }
 
@@ -39,19 +34,16 @@ export const tvlTask = async (ctx: CronJob) => {
   ctx.start();
 };
 
-const processLegacyChain = (chain: LegacyChain) =>
-  Promise.allSettled([
-    getAmmPoolTvl(chain),
-    getLendingPoolTvl(chain),
-    getProtocolTvl(chain),
-    getSubprotocolTvl(chain),
-    getZeroTvl(chain),
-    getMyntTvl(chain),
-    getStakingTvl(chain.context),
-    getFishTvl(chain.context),
-  ]);
+async function handleLegacyChain(chain: LegacyChain) {
+  const chainId = chain.context.chainId;
+  const snapshot = await buildLegacySnapshot(chain);
+  await saveSnapshotAtomic(chainId, snapshot);
+  childLogger.info({ chainId }, 'Legacy TVL snapshot updated');
+}
 
-const processSdexChain = (chain: SdexChain) =>
-  Promise.allSettled([getSdexTvl(chain), getStakingTvl(chain.context)]).then((results) =>
-    logger.debug({ chain: chain.context.chainId, results }, 'Sdex chain processed'),
-  );
+async function handleSdexChain(chain: SdexChain) {
+  const chainId = chain.context.chainId;
+  const snapshot = await buildSdexSnapshot(chain);
+  await saveSnapshotAtomic(chainId, snapshot);
+  childLogger.info({ chainId }, 'Sdex TVL snapshot updated');
+}
