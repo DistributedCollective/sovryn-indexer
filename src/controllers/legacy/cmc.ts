@@ -28,7 +28,7 @@ router.get(
   asyncRoute(async (req, res) =>
     maybeCacheResponse(
       res,
-      `legacy/cmc/tvl/${req.app.locals.network.chainId}`,
+      `legacy/cmc/tvl/${req.app.locals.network.name}`,
       async () => prepareTvlEndpoint(req.app.locals.network),
       LONG_CACHE_TTL,
     ).then((data) => res.json(toResponse(data))),
@@ -40,7 +40,7 @@ router.get(
   asyncRoute(async (req, res) =>
     maybeCacheResponse(
       res,
-      'legacy/cmc/tvl',
+      'legacy/cmc/tvl/summary',
       async () => prepareTvlSummaryEndpoint(networks.listChains()),
       LONG_CACHE_TTL,
     ).then((data) => res.json(toResponse(data))),
