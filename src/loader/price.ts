@@ -32,7 +32,7 @@ export function findPrice(base: number, quote: number, prices: PriceItem[] = [])
 }
 
 export function findUsdPrice(entry: number, prices: PriceItem[]) {
-  const token = prices.find((item) => item.tokenId === entry);
+  const token = prices.find((item) => Number(item.tokenId) === Number(entry));
   if (token) {
     return bignumber(token.value);
   }
@@ -48,7 +48,7 @@ export type PriceItem = {
 
 export const getLastPrices = (forceUpdate = false): Promise<PriceItem[]> =>
   maybeCache(
-    'lastPrices',
+    'lastPrices:v1',
     async () => {
       const dateMap = db
         .select({

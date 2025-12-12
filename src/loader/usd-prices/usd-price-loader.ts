@@ -121,6 +121,23 @@ async function processSdexTokens(chain: SdexChain, date: Date, tokens: Token[]):
       continue;
     }
 
+    // remove tracking prices for deprecated tokens
+    if (
+      [
+        // old WBTC
+        '0x0555e30da8f98308edb960aa94c0db47230d2b9c',
+      ]
+        .map((addr) => addr.toLowerCase())
+        .includes(token.address.toLowerCase())
+    ) {
+      toAdd.push({
+        ...token,
+        value: '0',
+        date,
+      });
+      continue;
+    }
+
     try {
       const price = findEndPrice(token.address, goal, pools, poolsWithIndexes, poolPrices);
 
