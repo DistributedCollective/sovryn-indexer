@@ -1,9 +1,9 @@
-FROM node:22.7.0 AS base
+FROM node:24.8.0-alpine AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
-RUN corepack enable && corepack prepare pnpm@8.15.6 --activate
+RUN corepack enable
 
 COPY . ./
 
