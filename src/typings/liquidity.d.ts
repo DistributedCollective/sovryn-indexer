@@ -27,6 +27,9 @@ declare global {
     aprPostLiq: string;
     aprContributedLiq: string;
     aprEst: string;
+
+    lpTokenAddress?: string;
+    lpTokenBalance?: string;
   };
 
   export type LiquidityChangesResponse = {
@@ -54,6 +57,9 @@ declare global {
     aprPostLiq: string;
     aprContributedLiq: string;
     aprEst: string;
+
+    lpTokenAddress?: string;
+    lpTokenBalance?: string;
   };
 
   export enum PositionType {

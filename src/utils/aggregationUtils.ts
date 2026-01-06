@@ -107,6 +107,9 @@ export function aggregatePositions(positions: LiquidityPosition[]) {
       aprPostLiq: curr.aprPostLiq,
       aprContributedLiq: curr.aprContributedLiq,
       aprEst: curr.aprEst,
+
+      lpTokenAddress: curr.lpTokenAddress,
+      lpTokenBalance: curr.lpTokenBalance,
     }),
     {
       base: '',
@@ -129,6 +132,9 @@ export function aggregatePositions(positions: LiquidityPosition[]) {
       aprPostLiq: '0',
       aprContributedLiq: '0',
       aprEst: '0',
+
+      lpTokenAddress: '',
+      lpTokenBalance: '',
     },
   );
 }

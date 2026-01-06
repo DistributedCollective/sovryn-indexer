@@ -69,6 +69,8 @@ export async function getUserPositions(
         aprPostLiq: '0',
         aprContributedLiq: '0',
         aprEst: '0',
+        lpTokenAddress,
+        lpTokenBalance,
       });
     }
   }
@@ -77,7 +79,9 @@ export async function getUserPositions(
     return [];
   }
 
-  const ambientMulticallData = ambientPositions.flatMap(() => [
+  const ambientMints = ambientPositions.shift();
+
+  const ambientMulticallData = [
     {
       target: queryContract.getAddress(),
       callData: queryContract.interface.encodeFunctionData('queryAmbientTokens', [user, base, quote, poolIdx]),
@@ -86,55 +90,59 @@ export async function getUserPositions(
       target: queryContract.getAddress(),
       callData: queryContract.interface.encodeFunctionData('queryPoolLpTokenAddress', [base, quote, poolIdx]),
     },
-  ]);
+  ];
 
   const ambientMulticallResults = await chain.multicall.tryAggregate.staticCall(true, ambientMulticallData);
 
-  const ambientPositionResults = await Promise.all(
-    ambientPositions.map(async (userLiquidity, index) => {
-      const ambientTokensResult = ambientMulticallResults[index * 2];
-      const lpTokenAddressResult = ambientMulticallResults[index * 2 + 1];
+  async function parseAmbientCallResults() {
+    const ambientTokensResult = ambientMulticallResults[0];
+    const lpTokenAddressResult = ambientMulticallResults[1];
 
-      if (ambientTokensResult.success && lpTokenAddressResult.success) {
-        const ambientTokens = parseAmbientTokensResult(
-          queryContract.interface.decodeFunctionResult('queryAmbientTokens', ambientTokensResult.returnData),
-        );
-        const lpTokenAddress = queryContract.interface.decodeFunctionResult(
-          'queryPoolLpTokenAddress',
-          lpTokenAddressResult.returnData,
-        )[0];
+    if (ambientTokensResult.success && lpTokenAddressResult.success) {
+      const ambientTokens = parseAmbientTokensResult(
+        queryContract.interface.decodeFunctionResult('queryAmbientTokens', ambientTokensResult.returnData),
+      );
+      const lpTokenAddress = queryContract.interface.decodeFunctionResult(
+        'queryPoolLpTokenAddress',
+        lpTokenAddressResult.returnData,
+      )[0];
 
-        const lpTokenBalance = await getErc20Balance(rpc, lpTokenAddress, user).then((balance) => balance.toString());
+      const lpTokenBalance = await getErc20Balance(rpc, lpTokenAddress, user).then((balance) => balance.toString());
 
-        const ambientLiq = bignumber(ambientTokens.liq).plus(bignumber(lpTokenBalance)).toFixed(0);
-        return {
+      const ambientLiq = bignumber(ambientTokens.liq).plus(bignumber(lpTokenBalance)).toFixed(0);
+      return [
+        {
           base: base,
           quote: quote,
-          poolIdx: userLiquidity.pool.poolIdx,
+          poolIdx: ambientMints.pool.poolIdx,
           ambientLiq,
-          time: userLiquidity.time,
-          transactionHash: userLiquidity.transactionHash,
+          time: ambientMints.time,
+          transactionHash: ambientMints.transactionHash,
           concLiq: '0',
           rewardLiq: '0',
           baseQty: ambientTokens.baseQty,
           quoteQty: ambientTokens.quoteQty,
-          aggregatedLiquidity: userLiquidity.liq,
-          aggregatedBaseFlow: userLiquidity.baseFlow,
-          aggregatedQuoteFlow: userLiquidity.quoteFlow,
-          positionType: userLiquidity.positionType,
-          bidTick: userLiquidity.bidTick,
-          askTick: userLiquidity.askTick,
+          aggregatedLiquidity: ambientMints.liq,
+          aggregatedBaseFlow: ambientMints.baseFlow,
+          aggregatedQuoteFlow: ambientMints.quoteFlow,
+          positionType: ambientMints.positionType,
+          bidTick: ambientMints.bidTick,
+          askTick: ambientMints.askTick,
           aprDuration: '0',
           aprPostLiq: '0',
           aprContributedLiq: '0',
           aprEst: '0',
-        };
-      }
-      return null;
-    }),
-  );
+          lpTokenAddress,
+          lpTokenBalance,
+        },
+      ];
+    }
+    return [];
+  }
 
-  const aggregatedAmbientPosition = aggregatePositions(ambientPositionResults.filter(Boolean));
+  const ambientPositionResults = await parseAmbientCallResults();
+
+  const aggregatedAmbientPosition = aggregatePositions(ambientPositionResults);
 
   // Group concentrated positions by (base, quote, poolIdx, bidTick, askTick)
   const groupedConcentratedPositions: { [key: string]: LiquidityChanges[] } = concentratedPositions.reduce(
@@ -233,5 +241,7 @@ export async function getUserPositions(
     }),
   );
 
-  return [aggregatedAmbientPosition, ...concentratedPositionsResults.filter(Boolean)];
+  const result = [aggregatedAmbientPosition, ...concentratedPositionsResults.filter(Boolean)];
+
+  return result;
 }

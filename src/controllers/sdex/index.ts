@@ -1,14 +1,14 @@
 import { Router } from 'express';
 import Joi from 'joi';
 
+import { prepareSdexVolume } from './volume.utils';
+
 import { DEFAULT_CACHE_TTL } from '~/config/constants';
 import { maybeCacheResponse } from '~/utils/cache';
 import { toResponse } from '~/utils/http-response';
 import { validatePaginatedRequest } from '~/utils/pagination';
 import { asyncRoute } from '~/utils/route-wrapper';
 import { validate } from '~/utils/validation';
-
-import { prepareSdexVolume } from './volume.utils';
 
 const router = Router();
 
@@ -60,14 +60,14 @@ router.get(
 
     return maybeCacheResponse(
       res,
-      `sdex/user_pool_positions/${chainId}/${user}/${base}/${quote}/${poolIdx}`,
+      `!sdex/user_pool_positions/${chainId}/${user}/${base}/${quote}/${poolIdx}`,
       async () => {
         const liquidity = await req.app.locals.network.sdex.getUpdatedLiquidity(user, base, quote, poolIdx);
         return {
           liquidity,
         };
       },
-      DEFAULT_CACHE_TTL,
+      5,
     ).then((data) => res.json(toResponse(data.liquidity)));
   }),
 );

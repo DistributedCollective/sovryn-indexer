@@ -1,3 +1,4 @@
+import { logger } from '@sovryn/sdex';
 import { DocumentNode } from 'graphql';
 import gql from 'graphql-tag';
 
