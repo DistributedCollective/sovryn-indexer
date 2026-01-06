@@ -1,4 +1,4 @@
-FROM node:24.8.0-alpine
+FROM node:24.8.0
 
 ENV NODE_ENV=production
 EXPOSE 8000
