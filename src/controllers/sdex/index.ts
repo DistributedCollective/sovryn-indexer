@@ -60,14 +60,14 @@ router.get(
 
     return maybeCacheResponse(
       res,
-      `!sdex/user_pool_positions/${chainId}/${user}/${base}/${quote}/${poolIdx}`,
+      `sdex/user_pool_positions/${chainId}/${user}/${base}/${quote}/${poolIdx}`,
       async () => {
         const liquidity = await req.app.locals.network.sdex.getUpdatedLiquidity(user, base, quote, poolIdx);
         return {
           liquidity,
         };
       },
-      5,
+      DEFAULT_CACHE_TTL,
     ).then((data) => res.json(toResponse(data.liquidity)));
   }),
 );
