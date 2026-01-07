@@ -77,6 +77,10 @@ export function parseRangeTokensResult(result) {
 }
 
 export function aggregatePositions(positions: LiquidityPosition[]) {
+  if (positions.length === 0) {
+    return [];
+  }
+
   const firstDepositTxHash =
     positions.reduce((acc, curr) => {
       if (!acc || new Date(curr.time) < new Date(acc.time)) {
@@ -85,58 +89,60 @@ export function aggregatePositions(positions: LiquidityPosition[]) {
       return acc;
     }, positions[0])?.transactionHash || '';
 
-  return positions.reduce(
-    (acc, curr) => ({
-      base: curr.base,
-      quote: curr.quote,
-      poolIdx: curr.poolIdx,
-      ambientLiq: bignumber(acc.ambientLiq).plus(curr.ambientLiq).toString(),
-      time: curr.time,
-      transactionHash: firstDepositTxHash,
-      concLiq: bignumber(acc.concLiq).plus(curr.concLiq).toString(),
-      rewardLiq: bignumber(acc.rewardLiq).plus(curr.rewardLiq).toString(),
-      baseQty: bignumber(acc.baseQty).plus(curr.baseQty).toString(),
-      quoteQty: bignumber(acc.quoteQty).plus(curr.quoteQty).toString(),
-      aggregatedLiquidity: bignumber(acc.aggregatedLiquidity).plus(curr.aggregatedLiquidity).toString(),
-      aggregatedBaseFlow: bignumber(acc.aggregatedBaseFlow).plus(curr.aggregatedBaseFlow).toString(),
-      aggregatedQuoteFlow: bignumber(acc.aggregatedQuoteFlow).plus(curr.aggregatedQuoteFlow).toString(),
-      positionType: PositionType.ambient,
-      bidTick: curr.bidTick,
-      askTick: curr.askTick,
-      aprDuration: curr.aprDuration,
-      aprPostLiq: curr.aprPostLiq,
-      aprContributedLiq: curr.aprContributedLiq,
-      aprEst: curr.aprEst,
+  return [
+    positions.reduce(
+      (acc, curr) => ({
+        base: curr.base,
+        quote: curr.quote,
+        poolIdx: curr.poolIdx,
+        ambientLiq: bignumber(acc.ambientLiq).plus(curr.ambientLiq).toString(),
+        time: curr.time,
+        transactionHash: firstDepositTxHash,
+        concLiq: bignumber(acc.concLiq).plus(curr.concLiq).toString(),
+        rewardLiq: bignumber(acc.rewardLiq).plus(curr.rewardLiq).toString(),
+        baseQty: bignumber(acc.baseQty).plus(curr.baseQty).toString(),
+        quoteQty: bignumber(acc.quoteQty).plus(curr.quoteQty).toString(),
+        aggregatedLiquidity: bignumber(acc.aggregatedLiquidity).plus(curr.aggregatedLiquidity).toString(),
+        aggregatedBaseFlow: bignumber(acc.aggregatedBaseFlow).plus(curr.aggregatedBaseFlow).toString(),
+        aggregatedQuoteFlow: bignumber(acc.aggregatedQuoteFlow).plus(curr.aggregatedQuoteFlow).toString(),
+        positionType: PositionType.ambient,
+        bidTick: curr.bidTick,
+        askTick: curr.askTick,
+        aprDuration: curr.aprDuration,
+        aprPostLiq: curr.aprPostLiq,
+        aprContributedLiq: curr.aprContributedLiq,
+        aprEst: curr.aprEst,
 
-      lpTokenAddress: curr.lpTokenAddress,
-      lpTokenBalance: curr.lpTokenBalance,
-    }),
-    {
-      base: '',
-      quote: '',
-      poolIdx: '',
-      ambientLiq: '0',
-      time: '0',
-      transactionHash: '',
-      concLiq: '0',
-      rewardLiq: '0',
-      baseQty: '0',
-      quoteQty: '0',
-      aggregatedLiquidity: '0',
-      aggregatedBaseFlow: '0',
-      aggregatedQuoteFlow: '0',
-      positionType: PositionType.ambient,
-      bidTick: 0,
-      askTick: 0,
-      aprDuration: '0',
-      aprPostLiq: '0',
-      aprContributedLiq: '0',
-      aprEst: '0',
+        lpTokenAddress: curr.lpTokenAddress,
+        lpTokenBalance: curr.lpTokenBalance,
+      }),
+      {
+        base: '',
+        quote: '',
+        poolIdx: '',
+        ambientLiq: '0',
+        time: '0',
+        transactionHash: '',
+        concLiq: '0',
+        rewardLiq: '0',
+        baseQty: '0',
+        quoteQty: '0',
+        aggregatedLiquidity: '0',
+        aggregatedBaseFlow: '0',
+        aggregatedQuoteFlow: '0',
+        positionType: PositionType.ambient,
+        bidTick: 0,
+        askTick: 0,
+        aprDuration: '0',
+        aprPostLiq: '0',
+        aprContributedLiq: '0',
+        aprEst: '0',
 
-      lpTokenAddress: '',
-      lpTokenBalance: '',
-    },
-  );
+        lpTokenAddress: '',
+        lpTokenBalance: '',
+      },
+    ),
+  ];
 }
 
 export function filterPositions(
