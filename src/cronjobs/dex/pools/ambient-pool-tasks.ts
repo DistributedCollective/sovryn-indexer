@@ -36,6 +36,10 @@ export const updateAmbientPool = async (pool: PoolExtended) => {
       dailyQuoteVolume: prettyNumber(bignumber(daily.quoteVolume)),
       // mark as just processed to avoid reprocessing
       processedAt: new Date(),
+      extra: {
+        ...pool.extra,
+        stats,
+      },
     })
     .where(eq(poolsTable.id, pool.id));
 

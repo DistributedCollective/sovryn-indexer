@@ -3,11 +3,9 @@ import { ethers } from 'ethers';
 import { bignumber } from 'mathjs';
 
 import { Chain } from './networks/chain-config';
-import { getErc20Balance } from './token';
 
-import { SdexQuery } from '~/artifacts/abis/types';
+import { ERC20__factory, SdexQuery } from '~/artifacts/abis/types';
 import {
-  aggregatePositions,
   filterPositions,
   netCumulativeLiquidity,
   parseAmbientTokensResult,
@@ -16,6 +14,7 @@ import {
   weightedAverageDuration,
 } from '~/utils/aggregationUtils';
 import { calculateAPR } from '~/utils/aprCalculation';
+import { logger } from '~/utils/logger';
 
 export enum PositionType {
   ambient = 'ambient',
@@ -35,118 +34,16 @@ export async function getUserPositions(
   const concentratedPositions = filterPositions(liquidityChanges, poolIdx, base, quote, PositionType.concentrated);
   const ambientPositions = filterPositions(liquidityChanges, poolIdx, base, quote, PositionType.ambient);
 
-  if (!ambientPositions.length || ambientPositions[0].liq === '0') {
-    // If there are no ambient positions, try checking for LP tokens...
-    const lpTokenAddress = await queryContract.queryPoolLpTokenAddress(base, quote, poolIdx);
-    const lpTokenBalance = await getErc20Balance(rpc, lpTokenAddress, user).then((balance) => balance.toString());
-
-    if (bignumber(lpTokenBalance).gt(0)) {
-      ambientPositions.push({
-        id: '',
-        changeType: 'mint',
-        transactionHash: '',
-        callIndex: 0,
-        user,
-        pool: {
-          base,
-          quote,
-          poolIdx: poolIdx.toString(),
-        },
-        block: '',
-        time: dayjs().unix().toString(),
-        positionType: PositionType.ambient,
-        liqChange: lpTokenBalance,
-        resetRewards: '',
-        timeFirstMint: '',
-        bidTick: 0,
-        askTick: 0,
-        isBid: false,
-        liq: lpTokenBalance,
-        baseFlow: '0',
-        quoteFlow: '0',
-        pivotTime: null,
-        aprDuration: '0',
-        aprPostLiq: '0',
-        aprContributedLiq: '0',
-        aprEst: '0',
-        lpTokenAddress,
-        lpTokenBalance,
-      });
-    }
-  }
-
-  if (concentratedPositions.length === 0 && ambientPositions.length === 0) {
-    return [];
-  }
-
-  let ambientPositionResults = [];
-  if (ambientPositions.length > 0) {
-    const ambientMints = ambientPositions.shift();
-
-    const ambientMulticallData = [
-      {
-        target: queryContract.getAddress(),
-        callData: queryContract.interface.encodeFunctionData('queryAmbientTokens', [user, base, quote, poolIdx]),
-      },
-      {
-        target: queryContract.getAddress(),
-        callData: queryContract.interface.encodeFunctionData('queryPoolLpTokenAddress', [base, quote, poolIdx]),
-      },
-    ];
-
-    const ambientMulticallResults = await chain.multicall.tryAggregate.staticCall(true, ambientMulticallData);
-
-    async function parseAmbientCallResults() {
-      const ambientTokensResult = ambientMulticallResults[0];
-      const lpTokenAddressResult = ambientMulticallResults[1];
-
-      if (ambientTokensResult.success && lpTokenAddressResult.success) {
-        const ambientTokens = parseAmbientTokensResult(
-          queryContract.interface.decodeFunctionResult('queryAmbientTokens', ambientTokensResult.returnData),
-        );
-        const lpTokenAddress = queryContract.interface.decodeFunctionResult(
-          'queryPoolLpTokenAddress',
-          lpTokenAddressResult.returnData,
-        )[0];
-
-        const lpTokenBalance = await getErc20Balance(rpc, lpTokenAddress, user).then((balance) => balance.toString());
-
-        const ambientLiq = bignumber(ambientTokens.liq).plus(bignumber(lpTokenBalance)).toFixed(0);
-
-        return [
-          {
-            base: base,
-            quote: quote,
-            poolIdx: ambientMints.pool.poolIdx,
-            ambientLiq,
-            time: ambientMints.time,
-            transactionHash: ambientMints.transactionHash,
-            concLiq: '0',
-            rewardLiq: '0',
-            baseQty: ambientTokens.baseQty,
-            quoteQty: ambientTokens.quoteQty,
-            aggregatedLiquidity: ambientMints.liq,
-            aggregatedBaseFlow: ambientMints.baseFlow,
-            aggregatedQuoteFlow: ambientMints.quoteFlow,
-            positionType: ambientMints.positionType,
-            bidTick: ambientMints.bidTick,
-            askTick: ambientMints.askTick,
-            aprDuration: '0',
-            aprPostLiq: '0',
-            aprContributedLiq: '0',
-            aprEst: '0',
-            lpTokenAddress,
-            lpTokenBalance,
-          },
-        ];
-      }
-      return [];
-    }
-
-    ambientPositionResults = await parseAmbientCallResults();
-  }
-
-  const aggregatedAmbientPosition = aggregatePositions(ambientPositionResults);
+  const aggregatedAmbientPosition = await tryAmbientPosition(
+    queryContract,
+    rpc,
+    user,
+    base,
+    quote,
+    poolIdx,
+    ambientPositions,
+    chain,
+  );
 
   // Group concentrated positions by (base, quote, poolIdx, bidTick, askTick)
   const groupedConcentratedPositions: { [key: string]: LiquidityChanges[] } = concentratedPositions.reduce(
@@ -248,4 +145,117 @@ export async function getUserPositions(
   const result = [...aggregatedAmbientPosition, ...concentratedPositionsResults.filter(Boolean)];
 
   return result;
+}
+
+async function tryAmbientPosition(
+  queryContract: SdexQuery,
+  rpc: ethers.JsonRpcProvider,
+  user: string,
+  base: string,
+  quote: string,
+  poolIdx: number,
+  liquidityChanges: LiquidityChangesResponse['liquidityChanges'],
+  chain: Chain,
+) {
+  const lpTokenAddress = await queryContract.queryPoolLpTokenAddress(base, quote, poolIdx);
+  const tokenContract = ERC20__factory.connect(lpTokenAddress, rpc);
+
+  const multicallData = [
+    {
+      target: queryContract.getAddress(),
+      callData: queryContract.interface.encodeFunctionData('queryAmbientTokens', [user, base, quote, poolIdx]),
+    },
+    {
+      target: queryContract.getAddress(),
+      callData: queryContract.interface.encodeFunctionData('queryAmbientTokens', [
+        lpTokenAddress,
+        base,
+        quote,
+        poolIdx,
+      ]),
+    },
+    {
+      target: queryContract.getAddress(),
+      callData: queryContract.interface.encodeFunctionData('queryAmbientPosition', [
+        lpTokenAddress,
+        base,
+        quote,
+        poolIdx,
+      ]),
+    },
+    {
+      target: tokenContract.getAddress(),
+      callData: tokenContract.interface.encodeFunctionData('balanceOf', [user]),
+    },
+    {
+      target: tokenContract.getAddress(),
+      callData: tokenContract.interface.encodeFunctionData('totalSupply'),
+    },
+  ];
+
+  const results = await chain.multicall.tryAggregate.staticCall(true, multicallData);
+
+  const userAmbientTokens = parseAmbientTokensResult(
+    queryContract.interface.decodeFunctionResult('queryAmbientTokens', results[0].returnData),
+  );
+  const lpAmbientTokens = parseAmbientTokensResult(
+    queryContract.interface.decodeFunctionResult('queryAmbientTokens', results[1].returnData),
+  );
+  const ambientPosition = queryContract.interface.decodeFunctionResult('queryAmbientPosition', results[2].returnData);
+  const lpTokenBalance = tokenContract.interface.decodeFunctionResult('balanceOf', results[3].returnData)[0].toString();
+  const lpTokenTotalSupply = tokenContract.interface
+    .decodeFunctionResult('totalSupply', results[4].returnData)[0]
+    .toString();
+
+  logger.info(
+    {
+      userAmbientTokens,
+      lpAmbientTokens,
+      lpTokenBalance,
+      lpTokenTotalSupply,
+      lpTokenAddress,
+      ambientPosition,
+    },
+    `Fetched ambient position data for user ${user} on pool ${base}-${quote}#${poolIdx}`,
+  );
+
+  const ratio = bignumber(lpTokenBalance).dividedBy(bignumber(lpTokenTotalSupply) || 1);
+  const ambientLiq = bignumber(userAmbientTokens.liq).plus(bignumber(lpAmbientTokens.liq).mul(ratio)).toFixed(0);
+  const baseQty = bignumber(userAmbientTokens.baseQty).plus(bignumber(lpAmbientTokens.baseQty).mul(ratio)).toFixed(0);
+  const quoteQty = bignumber(userAmbientTokens.quoteQty)
+    .plus(bignumber(lpAmbientTokens.quoteQty).mul(ratio))
+    .toFixed(0);
+
+  if (bignumber(ambientLiq).gt(0)) {
+    const item = liquidityChanges.shift();
+
+    return [
+      {
+        base: base,
+        quote: quote,
+        poolIdx: poolIdx.toString(),
+        ambientLiq,
+        time: item ? item.time : dayjs().unix().toString(),
+        transactionHash: item ? item.transactionHash : '',
+        concLiq: '0',
+        rewardLiq: '0',
+        baseQty: baseQty,
+        quoteQty: quoteQty,
+        aggregatedLiquidity: ambientLiq,
+        aggregatedBaseFlow: '0',
+        aggregatedQuoteFlow: '0',
+        positionType: PositionType.ambient,
+        bidTick: 0,
+        askTick: 0,
+        aprDuration: '0',
+        aprPostLiq: '0',
+        aprContributedLiq: '0',
+        aprEst: '0',
+        lpTokenAddress,
+        lpTokenBalance,
+      },
+    ];
+  }
+
+  return [];
 }

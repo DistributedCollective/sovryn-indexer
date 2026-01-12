@@ -17,6 +17,7 @@ export type PoolExtra = {
   type?: number;
   version?: number | null;
   smartToken?: string;
+  stats?: unknown;
 };
 
 export const poolsTable = pgTable(
