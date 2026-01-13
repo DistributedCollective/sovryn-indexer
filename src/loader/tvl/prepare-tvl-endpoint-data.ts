@@ -56,31 +56,33 @@ function makeEmptyTvlOutput(chain: Chain) {
  */
 export async function prepareTvlEndpoint(chain: Chain) {
   // 1) Try snapshot first – this guarantees consistency if cron writes atomically
-  const snapshot = await loadPrevSnapshot(chain.chainId);
+  // const snapshot = await loadPrevSnapshot(chain.chainId);
 
-  if (snapshot?.data) {
-    const output = snapshot.data as any;
+  // logger.info({ chain: chain.name, hasSnapshot: !!snapshot, data: snapshot }, 'Preparing TVL endpoint data');
 
-    // Ensure base shape is correct even if snapshot is slightly older schema
-    if (isNil(output.total_usd)) {
-      output.total_usd = '0';
-    }
-    if (isNil(output.updatedAt)) {
-      // store ISO in snapshot; here we can convert or just pass through
-      output.updatedAt = new Date().toISOString();
-    }
+  // if (snapshot?.data) {
+  //   const output = snapshot.data as any;
 
-    const requiredGroups = makeGroups(chain);
-    for (const g of requiredGroups) {
-      if (!output[g]) {
-        output[g] = { totalUsd: '0' };
-      } else if (isNil(output[g].totalUsd)) {
-        output[g].totalUsd = '0';
-      }
-    }
+  //   // Ensure base shape is correct even if snapshot is slightly older schema
+  //   if (isNil(output.total_usd)) {
+  //     output.total_usd = '0';
+  //   }
+  //   if (isNil(output.updatedAt)) {
+  //     // store ISO in snapshot; here we can convert or just pass through
+  //     output.updatedAt = new Date().toISOString();
+  //   }
 
-    return output;
-  }
+  //   const requiredGroups = makeGroups(chain);
+  //   for (const g of requiredGroups) {
+  //     if (!output[g]) {
+  //       output[g] = { totalUsd: '0' };
+  //     } else if (isNil(output[g].totalUsd)) {
+  //       output[g].totalUsd = '0';
+  //     }
+  //   }
+
+  //   return output;
+  // }
 
   // 2) Fallback: legacy behaviour (compute on the fly from DB)
   const data = await tvlRepository.loadAll(chain.chainId).execute();

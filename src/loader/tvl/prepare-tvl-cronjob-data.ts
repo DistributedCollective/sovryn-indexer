@@ -74,6 +74,8 @@ export async function getAmmPoolTvl(chain: LegacyChain) {
   if (values.length > 0) {
     await tvlRepository.create(values);
   }
+
+  return values;
 }
 
 export async function getLendingPoolTvl(chain: LegacyChain) {
@@ -118,6 +120,8 @@ export async function getLendingPoolTvl(chain: LegacyChain) {
   if (values.length > 0) {
     await tvlRepository.create(values);
   }
+
+  return values;
 }
 
 export async function getProtocolTvl(chain: LegacyChain) {
@@ -150,6 +154,8 @@ export async function getProtocolTvl(chain: LegacyChain) {
   if (values.length > 0) {
     await tvlRepository.create(values);
   }
+
+  return values;
 }
 
 export async function getStakingTvl(chain: Chain) {
@@ -162,14 +168,19 @@ export async function getStakingTvl(chain: Chain) {
   if (sov) {
     const balance = await getErc20Balance(chain.rpc, sov.address, chain.stakingAddress);
     if (!isNil(balance) && balance > 0) {
-      await tvlRepository.create({
-        chainId: chain.chainId,
-        contract: chain.stakingAddress,
-        tokenId: sov.id,
-        name: 'SOV_Staking',
-        balance: prettyNumber(bignumber(balance).div(10 ** sov.decimals)),
-        group: TvlGroup.staking,
-      });
+      const values = [
+        {
+          chainId: chain.chainId,
+          contract: chain.stakingAddress,
+          tokenId: sov.id,
+          name: 'SOV_Staking',
+          balance: prettyNumber(bignumber(balance).div(10 ** sov.decimals)),
+          group: TvlGroup.staking,
+        },
+      ];
+      await tvlRepository.create(values);
+
+      return;
     }
   }
 }
@@ -187,18 +198,24 @@ export async function getFishTvl(chain: Chain) {
     ? await getErc20Balance(chain.rpc, fish.address, chain.legacy.babelFishStaking)
     : BigInt(0);
 
-  await tvlRepository.create({
-    chainId: chain.chainId,
-    contract: fish.address,
-    tokenId: fish.id,
-    name: 'FISH_TVL',
-    balance: prettyNumber(
-      bignumber(fishTotalSupply).minus(multisigBalance.toString()).minus(stakingBalance.toString()),
-    ),
-    group: TvlGroup.fish,
-  });
+  const values = [
+    {
+      chainId: chain.chainId,
+      contract: fish.address,
+      tokenId: fish.id,
+      name: 'FISH_TVL',
+      balance: prettyNumber(
+        bignumber(fishTotalSupply).minus(multisigBalance.toString()).minus(stakingBalance.toString()),
+      ),
+      group: TvlGroup.fish,
+    },
+  ];
+
+  await tvlRepository.create(values);
 
   logger.info('Fish TVL data processed');
+
+  return values;
 }
 
 export async function getSubprotocolTvl(chain: LegacyChain) {
@@ -242,6 +259,8 @@ export async function getZeroTvl(chain: LegacyChain) {
     if (items) {
       await tvlRepository.create(items);
     }
+
+    return items;
   } catch (e) {
     logger.error({ error: e.message }, 'Error while processing Zero TVL');
   }
@@ -281,6 +300,8 @@ export async function getMyntTvl(chain: LegacyChain) {
     }
 
     logger.info('Mynt TVL data processed');
+
+    return items;
   } catch (e) {
     logger.error({ error: e.message }, 'Error while processing Mynt TVL');
   }
