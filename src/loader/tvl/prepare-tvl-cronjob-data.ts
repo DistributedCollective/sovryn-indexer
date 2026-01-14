@@ -263,6 +263,7 @@ export async function getZeroTvl(chain: LegacyChain) {
     return items;
   } catch (e) {
     logger.error({ error: e.message }, 'Error while processing Zero TVL');
+    return [];
   }
 }
 
@@ -271,7 +272,7 @@ export async function getMyntTvl(chain: LegacyChain) {
     const myntAggregator = chain.config.myntAggregator?.toLowerCase();
     if (!myntAggregator) {
       // chain does not have Mynt aggregator, skipping
-      return;
+      return [];
     }
 
     const zusdToken = await tokenRepository.getByAddress(chain.context.chainId, chain.zusdTokenAddress).execute();
@@ -304,6 +305,7 @@ export async function getMyntTvl(chain: LegacyChain) {
     return items;
   } catch (e) {
     logger.error({ error: e.message }, 'Error while processing Mynt TVL');
+    return [];
   }
 }
 
@@ -340,7 +342,9 @@ export async function getSdexTvl(chain: SdexChain) {
     }
 
     logger.info('Sdex TVL data processed');
+    return items;
   } catch (e) {
     logger.error({ error: e.message }, 'Error while processing Sdex TVL');
+    return [];
   }
 }
