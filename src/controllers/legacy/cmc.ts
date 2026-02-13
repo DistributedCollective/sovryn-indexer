@@ -25,14 +25,7 @@ router.get(
 router.get(
   '/tvl',
   networkAwareMiddleware([NetworkFeature.legacy, NetworkFeature.sdex]),
-  asyncRoute(async (req, res) =>
-    maybeCacheResponse(
-      res,
-      `vf:legacy/cmc/tvl/${req.app.locals.network.name}`,
-      async () => prepareTvlEndpoint(req.app.locals.network),
-      DEFAULT_CACHE_TTL,
-    ).then((data) => res.json(toResponse(data))),
-  ),
+  asyncRoute(async (req, res) => prepareTvlEndpoint(req.app.locals.network).then((data) => res.json(toResponse(data)))),
 );
 
 router.get(
