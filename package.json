@@ -13,7 +13,7 @@
     "workers": "node --watch ./build/workers.js",
     "predev": "pnpm run typechain && pnpm run graphql",
     "build": "rimraf build && tsc --project tsconfig.json && tsc-alias",
-    "prebuild": "pnpm run typechain",
+    "prebuild": "pnpm run typechain && node scripts/generate-build-info.js",
     "postbuild": "pnpm run graphql",
     "start": "NODE_ENV=production node ./build/index.js",
     "docker:dev": "./scripts/dev.sh",

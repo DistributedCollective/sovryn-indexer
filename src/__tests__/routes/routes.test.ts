@@ -35,4 +35,12 @@ describe('routes', () => {
     const response = await request(app).get('/sdex/user_pool_positions').query(mockUserPoolPositions);
     expect(response.status).toBe(200);
   });
+
+  it('GET /status should return status and git commit id', async () => {
+    const response = await request(app).get('/status');
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('status', 'ok');
+    expect(response.body).toHaveProperty('gitCommitId');
+    expect(typeof response.body.gitCommitId).toBe('string');
+  });
 });

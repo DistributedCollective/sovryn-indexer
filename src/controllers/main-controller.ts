@@ -11,6 +11,7 @@ import { db } from '~/database/client';
 import { lower } from '~/database/helpers';
 import { tokens } from '~/database/schema';
 import { chains } from '~/database/schema/chains';
+import { BUILD_INFO } from '~/generated/build-info';
 import { constructCandlesticks, getPrices } from '~/loader/chart/utils';
 import { networks } from '~/loader/networks';
 import { getLastPrices } from '~/loader/price';
@@ -228,6 +229,6 @@ router.get(
 );
 
 router.get('/', (req, res) => res.json({ status: 'ok' }));
-router.get('/status', (req, res) => res.json({ status: 'ok' }));
+router.get('/status', (req, res) => res.json({ status: 'ok', gitCommitId: BUILD_INFO.gitCommitId }));
 
 export default router;
