@@ -36,6 +36,7 @@ export async function getAmmPoolTvl(chain: LegacyChain) {
 
   const tokens = await tokenRepository.findAllByAddress(
     uniq([...liquidityPools.map((pool) => pool.token0.id), ...liquidityPools.map((pool) => pool.token1.id)]),
+    chain.context.chainId,
   );
 
   const values: NewTvlItem[] = [];
@@ -93,7 +94,10 @@ export async function getLendingPoolTvl(chain: LegacyChain) {
     }
   `);
 
-  const tokens = await tokenRepository.findAllByAddress(uniq(lendingPools.map((pool) => pool.underlyingAsset.id)));
+  const tokens = await tokenRepository.findAllByAddress(
+    uniq(lendingPools.map((pool) => pool.underlyingAsset.id)),
+    chain.context.chainId,
+  );
 
   const values: NewTvlItem[] = [];
 

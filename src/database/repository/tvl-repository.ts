@@ -31,11 +31,16 @@ export const tvlRepository = {
         tokenId: tvlTable.tokenId,
       })
       .from(tvlTable)
-      .innerJoin(tokens, eq(tvlTable.tokenId, tokens.id))
+      .innerJoin(tokens, and(eq(tvlTable.tokenId, tokens.id), eq(tvlTable.chainId, tokens.chainId)))
       .where(
         and(
           chainId ? eq(tvlTable.chainId, chainId) : undefined,
-          inArray(tvlTable.date, sql`(select MAX(${tvlTable.date}) from ${tvlTable})`),
+          chainId
+            ? inArray(
+                tvlTable.date,
+                sql`(select MAX(${tvlTable.date}) from ${tvlTable} where ${tvlTable.chainId} = ${chainId})`,
+              )
+            : inArray(tvlTable.date, sql`(select MAX(${tvlTable.date}) from ${tvlTable})`),
           eq(tokens.ignored, false),
         ),
       ),
